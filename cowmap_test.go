@@ -8,14 +8,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_NewCMap(t *testing.T) {
-	m := NewCMap()
+func Test_NewCowMap(t *testing.T) {
+	m := NewCowMap()
 	assert.NotNil(t, m)
 	assert.NotNil(t, m.readable)
 }
 
-func Test_CMapClone(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapClone(t *testing.T) {
+	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, strconv.Itoa(i))
 	}
@@ -24,8 +24,8 @@ func Test_CMapClone(t *testing.T) {
 	assert.Equal(t, 100, len(clone))
 }
 
-func Test_CMapLoad(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapLoad(t *testing.T) {
+	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, strconv.Itoa(i))
 	}
@@ -41,8 +41,8 @@ func Test_CMapLoad(t *testing.T) {
 	assert.Equal(t, nil, val)
 }
 
-func Test_CMapStore(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapStore(t *testing.T) {
+	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, strconv.Itoa(i))
 	}
@@ -50,8 +50,8 @@ func Test_CMapStore(t *testing.T) {
 	assert.Equal(t, 100, m.Len())
 }
 
-func Test_CMapDelete(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapDelete(t *testing.T) {
+	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, strconv.Itoa(i))
 	}
@@ -73,16 +73,16 @@ func Test_CMapDelete(t *testing.T) {
 	}
 }
 
-func Test_CMapLen(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapLen(t *testing.T) {
+	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, strconv.Itoa(i))
 	}
 	assert.Equal(t, 100, m.Len())
 }
 
-func Test_CMapRange(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapRange(t *testing.T) {
+	m := NewCowMap()
 	expert := make([]bool, 100)
 
 	for i := 0; i < 100; i++ {
@@ -100,8 +100,8 @@ func Test_CMapRange(t *testing.T) {
 	}
 }
 
-func Test_CMapRangeStop(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapRangeStop(t *testing.T) {
+	m := NewCowMap()
 	results := make([]bool, 100)
 
 	for i := 0; i < 100; i++ {
@@ -131,8 +131,8 @@ func Test_CMapRangeStop(t *testing.T) {
 	assert.Equal(t, count, expert)
 }
 
-func Test_CMapConcurrentLoadPanic(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapConcurrentLoadPanic(t *testing.T) {
+	m := NewCowMap()
 	assert.NotPanics(t, func() {
 		for i := 0; i < 10000; i++ {
 			go func() {
@@ -144,8 +144,8 @@ func Test_CMapConcurrentLoadPanic(t *testing.T) {
 	})
 }
 
-func Test_CMapConcurrentStorePanic(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapConcurrentStorePanic(t *testing.T) {
+	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, strconv.Itoa(i))
 	}
@@ -161,8 +161,8 @@ func Test_CMapConcurrentStorePanic(t *testing.T) {
 	})
 }
 
-func Test_CMapStoreOrLoadConcurrent(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapStoreOrLoadConcurrent(t *testing.T) {
+	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, i)
 	}
@@ -198,8 +198,8 @@ func Test_CMapStoreOrLoadConcurrent(t *testing.T) {
 	loadwg.Wait()
 }
 
-func Test_CMapStoreAndLoadConcurrent(t *testing.T) {
-	m := NewCMap()
+func Test_CowMapStoreAndLoadConcurrent(t *testing.T) {
+	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, i)
 	}
@@ -237,8 +237,8 @@ func Test_CMapStoreAndLoadConcurrent(t *testing.T) {
 	})
 }
 
-func Benchmark_CMapStore(b *testing.B) {
-	m := NewCMap()
+func Benchmark_CowMapStore(b *testing.B) {
+	m := NewCowMap()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		m.Store(i, strconv.Itoa(i))
@@ -246,7 +246,7 @@ func Benchmark_CMapStore(b *testing.B) {
 }
 
 func Benchmark_CircleLoad(b *testing.B) {
-	m := NewCMap()
+	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, strconv.Itoa(i))
 	}

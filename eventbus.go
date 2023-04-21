@@ -11,7 +11,7 @@ type channel struct {
 	bufferSize int
 	topic      string
 	channel    chan any
-	handlers   *CMap
+	handlers   *CowMap
 	closed     bool
 	stopCh     chan any
 }
@@ -28,7 +28,7 @@ func newChannel(topic string, bufferSize int) *channel {
 		topic:      topic,
 		bufferSize: bufferSize,
 		channel:    ch,
-		handlers:   NewCMap(),
+		handlers:   NewCowMap(),
 		stopCh:     make(chan any),
 	}
 	go c.loop()
@@ -109,7 +109,7 @@ func (c *channel) close() {
 
 // EventBus is the box for topics and handlers.
 type EventBus struct {
-	channels   *CMap
+	channels   *CowMap
 	bufferSize int
 	once       sync.Once
 }
@@ -122,7 +122,7 @@ func NewBuffered(bufferSize int) *EventBus {
 	}
 	return &EventBus{
 		bufferSize: bufferSize,
-		channels:   NewCMap(),
+		channels:   NewCowMap(),
 	}
 }
 
