@@ -22,6 +22,7 @@ func Test_newChannel(t *testing.T) {
 	assert.NotNil(t, ch.channel)
 	assert.Equal(t, "test_topic", ch.topic)
 	assert.NotNil(t, ch.stopCh)
+	assert.NotNil(t, ch.handlers)
 	ch.close()
 }
 
@@ -31,9 +32,29 @@ func Test_channelSubscribe(t *testing.T) {
 	assert.NotNil(t, ch.channel)
 	assert.Equal(t, "test_topic", ch.topic)
 
-	ch.subscribe(sub1)
-	ch.subscribe(sub2)
+	err := ch.subscribe(sub1)
+	assert.Nil(t, err)
 	ch.close()
+	err = ch.subscribe(sub2)
+	assert.Equal(t, ErrChannelClosed, err)
+}
+
+func Test_channelUnsubscribe(t *testing.T) {
+	ch := newChannel("test_topic", -1)
+	assert.NotNil(t, ch)
+	assert.NotNil(t, ch.channel)
+	assert.Equal(t, "test_topic", ch.topic)
+
+	err := ch.subscribe(sub1)
+	assert.Nil(t, err)
+	err = ch.unsubscribe(sub1)
+	assert.Nil(t, err)
+
+	err = ch.subscribe(sub1)
+	assert.Nil(t, err)
+	ch.close()
+	err = ch.subscribe(sub2)
+	assert.Equal(t, ErrChannelClosed, err)
 }
 
 func Test_channelPublish(t *testing.T) {
@@ -47,11 +68,12 @@ func Test_channelPublish(t *testing.T) {
 
 	go func() {
 		for i := 0; i < 10000; i++ {
-			ch.publish(i)
+			err := ch.publish(i)
+			assert.Nil(t, err)
 		}
 	}()
 	time.Sleep(1000 * time.Millisecond)
-
-	// ch.close()
-	// ch.publish(13)
+	ch.close()
+	err := ch.publish(1)
+	assert.Equal(t, ErrChannelClosed, err)
 }

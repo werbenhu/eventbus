@@ -1,7 +1,6 @@
 package eventbus
 
 import (
-	"fmt"
 	"reflect"
 	"sync"
 )
@@ -69,10 +68,11 @@ func (c *channel) subscribe(handler any) error {
 	c.RLock()
 	defer c.RUnlock()
 	if c.closed {
-		return fmt.Errorf("channel on topic:%s is closed", c.topic)
+		return ErrChannelClosed
 	}
 	fn := reflect.ValueOf(handler)
 	c.handlers.Store(fn.Pointer(), &fn)
+	return nil
 }
 
 // publish trigger handlers defined for this channel. payload argument will be transferred to handlers.
@@ -80,16 +80,22 @@ func (c *channel) publish(payload any) error {
 	c.RLock()
 	defer c.RUnlock()
 	if c.closed {
-		return fmt.Errorf("channel on topic:%s is closed", c.topic)
+		return ErrChannelClosed
 	}
 	c.channel <- payload
 	return nil
 }
 
 // unsubscribe removes handler defined for this channel.
-func (c *channel) unsubscribe(handler any) {
+func (c *channel) unsubscribe(handler any) error {
+	c.RLock()
+	defer c.RUnlock()
+	if c.closed {
+		return ErrChannelClosed
+	}
 	fn := reflect.ValueOf(handler)
 	c.handlers.Delete(fn.Pointer())
+	return nil
 }
 
 // close closes a channel
@@ -132,7 +138,7 @@ func New() *EventBus {
 func (e *EventBus) Unsubscribe(topic string, handler any) error {
 	ch, ok := e.channels.Load(topic)
 	if !ok {
-		return fmt.Errorf("no subscriber on topic:%s", topic)
+		return ErrNoSubscriber
 	}
 	ch.(*channel).unsubscribe(handler)
 	return nil
@@ -142,13 +148,13 @@ func (e *EventBus) Unsubscribe(topic string, handler any) error {
 func (e *EventBus) Subscribe(topic string, handler any) error {
 	typ := reflect.TypeOf(handler)
 	if typ.Kind() != reflect.Func {
-		return fmt.Errorf("the type of handler is %s, not type reflect.Func", reflect.TypeOf(handler).Kind())
+		return ErrHandlerIsNotFunc
 	}
 	if typ.NumIn() != 2 {
-		return fmt.Errorf("the number of parameters of the handler must be two")
+		return ErrHandlerParamNum
 	}
 	if typ.In(0).Kind() != reflect.String {
-		return fmt.Errorf("the first of parameters of the handler must be string type")
+		return ErrHandlerFirstParam
 	}
 
 	ch, ok := e.channels.Load(topic)
