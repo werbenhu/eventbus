@@ -4,6 +4,7 @@
 <a href="https://github.com/werbenhu/eventbus"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
 </div>
 
+English | [简体中文](README-CN.md)
 # eventbus
 A lightweight eventbus that simplifies communication between goroutines.
 
@@ -22,12 +23,10 @@ import (
 )
 ```
 
-## Example
-
-### eventbus 
+## What's eventbus?
  EventBus is a container for event topics. Each topic corresponds to a channel. `eventbus.Publish()` pushes a message to the channel, and the handler in `eventbus.Subscribe()` will process the message coming out of the channel.
 
-#### eventbus example
+### eventbus example
 ```go
 func handler(topic string, payload int) {
 	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
@@ -53,7 +52,7 @@ func main() {
 }
 ```
 
-### pipe 
+## Use Pipes instead of channels
 
 Pipe is a wrapper for a channel. Subscribers receive messages asynchronously. You can use `Pipe.Publish()` instead of `chan <-` and `Pipe.Subscribe()` instead of `<- chan`. If there are multiple subscribers, one message will be received by each subscriber.
 
