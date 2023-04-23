@@ -3,28 +3,27 @@ package eventbus
 import (
 	"sync"
 	"sync/atomic"
-	"unsafe"
 )
 
-type innermap map[any]any
+type tmap map[any]any
 
 // CowMap is the box of a Copy-On-Write map
 type CowMap struct {
 	mu       sync.Mutex
-	readable *innermap
+	readable atomic.Value
 }
 
 func NewCowMap() *CowMap {
-	inmap := make(innermap)
-	return &CowMap{
-		readable: &inmap,
-	}
+	m := make(tmap)
+	c := &CowMap{}
+	c.readable.Store(m)
+	return c
 }
 
 // clone create a copy of the map
-func (c *CowMap) clone() innermap {
-	m := make(innermap)
-	for k, v := range *c.readable {
+func (c *CowMap) clone() tmap {
+	m := make(tmap)
+	for k, v := range c.readable.Load().(tmap) {
 		m[k] = v
 	}
 	return m
@@ -34,13 +33,13 @@ func (c *CowMap) clone() innermap {
 // value is present.
 // The ok result indicates whether value was found in the map.
 func (c *CowMap) Load(key any) (value any, ok bool) {
-	value, ok = (*c.readable)[key]
+	value, ok = c.readable.Load().(tmap)[key]
 	return
 }
 
 // Len returns how many values stored in the map.
 func (c *CowMap) Len() int {
-	return len(*c.readable)
+	return len(c.readable.Load().(tmap))
 }
 
 // Store sets the value for a key.
@@ -50,9 +49,7 @@ func (c *CowMap) Store(key, value any) {
 
 	copy := c.clone()
 	copy[key] = value
-
-	ptr := (*unsafe.Pointer)(unsafe.Pointer(&c.readable))
-	atomic.SwapPointer(ptr, unsafe.Pointer(&copy))
+	c.readable.Store(copy)
 }
 
 // Delete deletes the value for a key.
@@ -63,14 +60,13 @@ func (c *CowMap) Delete(key any) {
 	copy := c.clone()
 	delete(copy, key)
 
-	ptr := (*unsafe.Pointer)(unsafe.Pointer(&c.readable))
-	atomic.SwapPointer(ptr, unsafe.Pointer(&copy))
+	c.readable.Store(copy)
 }
 
 // Range calls f sequentially for each key and value present in the map.
 // If f returns false, range stops the iteration.
 func (c *CowMap) Range(f func(key, value any) bool) {
-	for k, v := range *c.readable {
+	for k, v := range c.readable.Load().(tmap) {
 		if !f(k, v) {
 			break
 		}

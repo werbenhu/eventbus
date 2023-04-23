@@ -1,7 +1,6 @@
 package eventbus
 
 import (
-	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -10,11 +9,11 @@ import (
 )
 
 func pipeSubOne(val int) {
-	fmt.Printf("pipeSubOne:%d\n", val)
+	// fmt.Printf("pipeSubOne:%d\n", val)
 }
 
 func pipeSubTwo(val int) {
-	fmt.Printf("pipeSubTwo:%d\n", val)
+	// fmt.Printf("pipeSubTwo:%d\n", val)
 }
 
 func Test_NewPipe(t *testing.T) {

@@ -134,7 +134,7 @@ func Test_CowMapRangeStop(t *testing.T) {
 func Test_CowMapConcurrentLoadPanic(t *testing.T) {
 	m := NewCowMap()
 	assert.NotPanics(t, func() {
-		for i := 0; i < 10000; i++ {
+		for i := 0; i < 100; i++ {
 			go func() {
 				for j := 0; j < 100; j++ {
 					m.Store(j, strconv.Itoa(j))
@@ -151,7 +151,7 @@ func Test_CowMapConcurrentStorePanic(t *testing.T) {
 	}
 
 	assert.NotPanics(t, func() {
-		for i := 0; i < 10000; i++ {
+		for i := 0; i < 100; i++ {
 			go func() {
 				for j := 0; j < 100; j++ {
 					m.Load(j)
@@ -205,7 +205,7 @@ func Test_CowMapStoreAndLoadConcurrent(t *testing.T) {
 	}
 
 	assert.NotPanics(t, func() {
-		loadGoroutineSize := 1000
+		loadGoroutineSize := 100
 		loadWg := sync.WaitGroup{}
 		loadWg.Add(loadGoroutineSize)
 

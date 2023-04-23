@@ -1,7 +1,6 @@
 package eventbus
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -9,11 +8,11 @@ import (
 )
 
 func sub1(topic string, val int) {
-	fmt.Printf("sub1 topic:%s, val:%d\n", topic, val)
+	// fmt.Printf("sub1 topic:%s, val:%d\n", topic, val)
 }
 
 func sub2(topic string, val int) {
-	fmt.Printf("sub2 topic:%s, val:%d\n", topic, val)
+	// fmt.Printf("sub2 topic:%s, val:%d\n", topic, val)
 }
 
 func Test_newChannel(t *testing.T) {
