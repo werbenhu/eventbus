@@ -25,7 +25,9 @@ import (
 ```
 
 ## What's eventbus?
- EventBus is a container for event topics. Each topic corresponds to a channel. `eventbus.Publish()` pushes a message to the channel, and the handler in `eventbus.Subscribe()` will process the message coming out of the channel.
+ EventBus is a wrapper for multiple topics, with each topic corresponding to a channel. The `eventbus.Publish()` method pushes a message to the channel, while the handler in the `eventbus.Subscribe()` method processes the messages coming out of the channel.
+
+If you want to use a buffered EventBus, you can create one using the `eventbus.NewBuffered(bufferSize int)` method, which creates a buffered channel for each topic.
 
 ### eventbus example
 ```go
