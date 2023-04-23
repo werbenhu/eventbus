@@ -130,6 +130,7 @@ func NewBuffered(bufferSize int) *EventBus {
 func New() *EventBus {
 	return &EventBus{
 		bufferSize: -1,
+		channels:   NewCowMap(),
 	}
 }
 

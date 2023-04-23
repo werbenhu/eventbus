@@ -37,7 +37,7 @@ func NewBufferedPipe[T any](bufferSize int) *Pipe[T] {
 
 	p := &Pipe[T]{
 		bufferSize: bufferSize,
-		channel:    make(chan T),
+		channel:    make(chan T, bufferSize),
 		stopCh:     make(chan any),
 		handlers:   NewCowMap(),
 	}
