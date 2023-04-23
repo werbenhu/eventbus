@@ -13,6 +13,7 @@ type CowMap struct {
 	readable atomic.Value
 }
 
+// NewCowMap creates a new CowMap instance
 func NewCowMap() *CowMap {
 	m := make(tmap)
 	c := &CowMap{}
@@ -20,7 +21,8 @@ func NewCowMap() *CowMap {
 	return c
 }
 
-// clone create a copy of the map
+// clone creates a copy of the map by iterating over the original map
+// and copying its key-value pairs to the new map
 func (c *CowMap) clone() tmap {
 	m := make(tmap)
 	for k, v := range c.readable.Load().(tmap) {
@@ -29,30 +31,32 @@ func (c *CowMap) clone() tmap {
 	return m
 }
 
-// Load returns the value stored in the map for a key, or nil if no
-// value is present.
-// The ok result indicates whether value was found in the map.
+// Load returns the value stored in the map for a given key,
+// or nil if the key is not present.
+// The ok result indicates whether the value was found in the map.
 func (c *CowMap) Load(key any) (value any, ok bool) {
 	value, ok = c.readable.Load().(tmap)[key]
 	return
 }
 
-// Len returns how many values stored in the map.
+// Len returns the number of key-value pairs stored in the map
 func (c *CowMap) Len() int {
 	return len(c.readable.Load().(tmap))
 }
 
-// Store sets the value for a key.
+// Store sets the value for a given key by creating a new copy of the map
+// and adding the new key-value pair to it
 func (c *CowMap) Store(key, value any) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	copy := c.clone()
-	copy[key] = value
-	c.readable.Store(copy)
+	copy := c.clone()      // create a copy of the map
+	copy[key] = value      // add the new key-value pair to the copy
+	c.readable.Store(copy) // update the atomic value with the new copy
 }
 
-// Delete deletes the value for a key.
+// Delete removes a key-value pair from the map by creating a new copy of the map
+// and deleting the specified key from it
 func (c *CowMap) Delete(key any) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -63,8 +67,8 @@ func (c *CowMap) Delete(key any) {
 	c.readable.Store(copy)
 }
 
-// Range calls f sequentially for each key and value present in the map.
-// If f returns false, range stops the iteration.
+// Range calls the provided function for each key-value pair in the map,
+// stopping the iteration if the function returns false
 func (c *CowMap) Range(f func(key, value any) bool) {
 	for k, v := range c.readable.Load().(tmap) {
 		if !f(k, v) {

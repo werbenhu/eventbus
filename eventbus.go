@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-// channel is the box of a topic and handlers. a topic corresponds to a channel
+// channel is a struct representing a topic and its associated handlers.
 type channel struct {
 	sync.RWMutex
 	bufferSize int
@@ -16,7 +16,9 @@ type channel struct {
 	stopCh     chan any
 }
 
-// newChannel create a channle for a topic
+// newChannel creates a new channel with a specified topic and buffer size.
+// It initializes the handlers map with NewCowMap function and
+// starts a goroutine c.loop() to continuously listen to messages in the channel.
 func newChannel(topic string, bufferSize int) *channel {
 	var ch chan any
 	if bufferSize <= 0 {
@@ -35,7 +37,9 @@ func newChannel(topic string, bufferSize int) *channel {
 	return c
 }
 
-// loop loops forever, receiving published message from the channel, transfer payload to subscriber by calling handlers
+// loop listens to the channel and calls handlers with payload.
+// It receives messages from the channel and then iterates over the handlers
+// in the handlers map to call them with the payload.
 func (c *channel) loop() {
 	topic := reflect.ValueOf(c.topic)
 	for {
@@ -48,6 +52,9 @@ func (c *channel) loop() {
 				typ := handler.Type()
 
 				if param == nil {
+					// If the parameter passed to the handler is nil,
+					// it initializes a new payload element based on the
+					// type of the second parameter of the handler using the reflect package.
 					payload = reflect.New(typ.In(1)).Elem()
 				} else {
 					payload = reflect.ValueOf(param)

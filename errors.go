@@ -19,6 +19,8 @@ func (e err) Error() string {
 	return e.Msg
 }
 
+// Global variables that represent common errors that may be
+// returned by the eventbus functions.
 var (
 	ErrHandlerIsNotFunc  = err{Code: 10000, Msg: "handler is not a function"}
 	ErrHandlerParamNum   = err{Code: 10001, Msg: "the number of parameters of the handler must be two"}
