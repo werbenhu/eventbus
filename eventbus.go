@@ -146,6 +146,8 @@ func (e *EventBus) Unsubscribe(topic string, handler any) error {
 }
 
 // Subscribe subscribes to a topic, return error if handler is not a function.
+// handler must be a function, and must have two parameters, the first parameter must be a string,
+// the type of the handler's second parameter must be consistent with the type of the payload in Publish
 func (e *EventBus) Subscribe(topic string, handler any) error {
 	typ := reflect.TypeOf(handler)
 	if typ.Kind() != reflect.Func {
@@ -168,6 +170,7 @@ func (e *EventBus) Subscribe(topic string, handler any) error {
 }
 
 // Publish trigger handlers defined for a topic. payload argument will be transferred to the handler.
+// The type of the payload must correspond to the second parameter of the handler in Subscribe
 func (e *EventBus) Publish(topic string, payload any) error {
 	ch, ok := e.channels.Load(topic)
 

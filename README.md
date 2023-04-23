@@ -35,6 +35,8 @@ func main() {
 	bus.Subscribe("testtopic", handler)
 	bus.Publish("testtopic", 100)
 
+	// Subscribers receive messages asynchronously,
+	// So delay for a while before unsubscribe
 	time.Sleep(time.Millisecond)
 	bus.Unsubscribe("testtopic", handler)
 	bus.Close()
@@ -66,6 +68,8 @@ func main() {
 	}(pipe)
 	wg.Wait()
 
+	// Subscribers receive messages asynchronously,
+	// So delay for a while before unsubscribe
 	time.Sleep(time.Millisecond)
 	pipe.Unsubscribe(handler1)
 	pipe.Unsubscribe(handler2)

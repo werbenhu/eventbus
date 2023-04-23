@@ -9,10 +9,12 @@ type err struct {
 	Code int
 }
 
+// String return the error's message
 func (e err) String() string {
 	return e.Msg
 }
 
+// Error return the error's message
 func (e err) Error() string {
 	return e.Msg
 }

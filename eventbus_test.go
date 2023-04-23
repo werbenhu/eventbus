@@ -7,12 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func sub1(topic string, val int) {
-	// fmt.Printf("sub1 topic:%s, val:%d\n", topic, val)
+func busHandlerOne(topic string, val int) {
 }
 
-func sub2(topic string, val int) {
-	// fmt.Printf("sub2 topic:%s, val:%d\n", topic, val)
+func busHandlerTwo(topic string, val int) {
 }
 
 func Test_newChannel(t *testing.T) {
@@ -31,10 +29,10 @@ func Test_channelSubscribe(t *testing.T) {
 	assert.NotNil(t, ch.channel)
 	assert.Equal(t, "test_topic", ch.topic)
 
-	err := ch.subscribe(sub1)
+	err := ch.subscribe(busHandlerOne)
 	assert.Nil(t, err)
 	ch.close()
-	err = ch.subscribe(sub2)
+	err = ch.subscribe(busHandlerTwo)
 	assert.Equal(t, ErrChannelClosed, err)
 }
 
@@ -44,15 +42,15 @@ func Test_channelUnsubscribe(t *testing.T) {
 	assert.NotNil(t, ch.channel)
 	assert.Equal(t, "test_topic", ch.topic)
 
-	err := ch.subscribe(sub1)
+	err := ch.subscribe(busHandlerOne)
 	assert.Nil(t, err)
-	err = ch.unsubscribe(sub1)
+	err = ch.unsubscribe(busHandlerOne)
 	assert.Nil(t, err)
 
-	err = ch.subscribe(sub1)
+	err = ch.subscribe(busHandlerOne)
 	assert.Nil(t, err)
 	ch.close()
-	err = ch.subscribe(sub2)
+	err = ch.subscribe(busHandlerTwo)
 	assert.Equal(t, ErrChannelClosed, err)
 }
 
@@ -62,7 +60,7 @@ func Test_channelPublish(t *testing.T) {
 	assert.NotNil(t, ch.channel)
 	assert.Equal(t, "test_topic", ch.topic)
 
-	ch.subscribe(sub1)
+	ch.subscribe(busHandlerOne)
 	time.Sleep(time.Millisecond)
 
 	go func() {

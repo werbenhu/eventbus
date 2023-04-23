@@ -8,12 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func pipeSubOne(val int) {
-	// fmt.Printf("pipeSubOne:%d\n", val)
+func pipeHandlerOne(val int) {
 }
 
-func pipeSubTwo(val int) {
-	// fmt.Printf("pipeSubTwo:%d\n", val)
+func pipeHandlerTwo(val int) {
 }
 
 func Test_NewPipe(t *testing.T) {
@@ -30,10 +28,10 @@ func Test_PipeSubscribe(t *testing.T) {
 	assert.NotNil(t, p)
 	assert.NotNil(t, p.channel)
 
-	err := p.Subscribe(pipeSubOne)
+	err := p.Subscribe(pipeHandlerOne)
 	assert.Nil(t, err)
 	p.Close()
-	err = p.Subscribe(pipeSubTwo)
+	err = p.Subscribe(pipeHandlerTwo)
 	assert.Equal(t, ErrChannelClosed, err)
 }
 
@@ -42,15 +40,15 @@ func Test_PipeUnsubscribe(t *testing.T) {
 	assert.NotNil(t, p)
 	assert.NotNil(t, p.channel)
 
-	err := p.Subscribe(pipeSubOne)
+	err := p.Subscribe(pipeHandlerOne)
 	assert.Nil(t, err)
-	err = p.Unsubscribe(pipeSubOne)
+	err = p.Unsubscribe(pipeHandlerOne)
 	assert.Nil(t, err)
 
-	err = p.Subscribe(pipeSubOne)
+	err = p.Subscribe(pipeHandlerOne)
 	assert.Nil(t, err)
 	p.Close()
-	err = p.Unsubscribe(pipeSubOne)
+	err = p.Unsubscribe(pipeHandlerOne)
 	assert.Equal(t, ErrChannelClosed, err)
 }
 
@@ -59,7 +57,7 @@ func Test_PipePublish(t *testing.T) {
 	assert.NotNil(t, p)
 	assert.NotNil(t, p.channel)
 
-	err := p.Subscribe(pipeSubOne)
+	err := p.Subscribe(pipeHandlerOne)
 	time.Sleep(time.Millisecond)
 
 	var wg sync.WaitGroup
