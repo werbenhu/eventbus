@@ -24,7 +24,10 @@ import (
 
 ## Example
 
-### eventbus example
+### eventbus 
+ EventBus is a container for event topics. Each topic corresponds to a channel. `eventbus.Publish()` pushes a message to the channel, and the handler in `eventbus.Subscribe()` will process the message coming out of the channel.
+
+#### eventbus example
 ```go
 func handler(topic string, payload int) {
 	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
@@ -32,18 +35,31 @@ func handler(topic string, payload int) {
 
 func main() {
 	bus := eventbus.New()
+
+	// Subscribe() subscribes to a topic, return an error if the handler is not a function.
+	// The handler must have two parameters: the first parameter must be a string,
+	// and the type of the handler's second parameter must be consistent with the type of the payload in `Publish()`
 	bus.Subscribe("testtopic", handler)
+
+	// Publish() triggers the handlers defined for a topic. The `payload` argument will be passed to the handler.
+	// The type of the payload must correspond to the second parameter of the handler in `Subscribe()`.
 	bus.Publish("testtopic", 100)
 
-	// Subscribers receive messages asynchronously,
-	// So delay for a while before unsubscribe
+	// Subscribers receive messages asynchronously. 
+	// To ensure that subscribers can receive all messages, there is a delay before unsubscribe
 	time.Sleep(time.Millisecond)
 	bus.Unsubscribe("testtopic", handler)
 	bus.Close()
 }
 ```
 
-### pipe example
+### pipe 
+
+Pipe is a wrapper for a channel. Subscribers receive messages asynchronously. You can use `Pipe.Publish()` instead of `chan <-` and `Pipe.Subscribe()` instead of `<- chan`. If there are multiple subscribers, one message will be received by each subscriber.
+
+If you want to use a buffered channel, you can use `eventbus.NewPipe[T](bufferSize int)` to create a buffered pipe.
+
+#### pipe example
 ```go
 func handler1(val string) {
 	fmt.Printf("handler1 val:%s\n", val)
@@ -68,8 +84,8 @@ func main() {
 	}(pipe)
 	wg.Wait()
 
-	// Subscribers receive messages asynchronously,
-	// So delay for a while before unsubscribe
+	// Subscribers receive messages asynchronously. 
+	// To ensure that subscribers can receive all messages, there is a delay before unsubscribe
 	time.Sleep(time.Millisecond)
 	pipe.Unsubscribe(handler1)
 	pipe.Unsubscribe(handler2)

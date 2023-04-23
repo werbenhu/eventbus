@@ -7,7 +7,7 @@ import (
 
 type tmap map[any]any
 
-// CowMap is the box of a Copy-On-Write map
+// CowMap is a wrapper of Copy-On-Write map
 type CowMap struct {
 	mu       sync.Mutex
 	readable atomic.Value

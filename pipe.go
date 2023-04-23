@@ -6,6 +6,9 @@ import (
 
 type Handler[T any] func(payload T)
 
+// Pipe is a wrapper of channel. Subscribers will receive messages asynchronously.
+// You can use Pipe.Publish() instead of chan <- and Pipe.Subscribe() instead of <- chan.
+// If there are multiple subscribers, one message will be received by each subscriber.
 type Pipe[T any] struct {
 	sync.RWMutex
 	bufferSize int

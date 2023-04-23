@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-// channel is the box for a topic and handlers. a topic corresponds to a channel
+// channel is the box of a topic and handlers. a topic corresponds to a channel
 type channel struct {
 	sync.RWMutex
 	bufferSize int
@@ -75,7 +75,7 @@ func (c *channel) subscribe(handler any) error {
 	return nil
 }
 
-// publish trigger handlers defined for this channel. payload argument will be transferred to handlers.
+// publish triggers the handlers defined for this channel. The `payload` argument will be passed to the handler.
 func (c *channel) publish(payload any) error {
 	c.RLock()
 	defer c.RUnlock()
@@ -107,7 +107,9 @@ func (c *channel) close() {
 	close(c.channel)
 }
 
-// EventBus is the box for topics and handlers.
+// EventBus is a container for event topics.
+// Each topic corresponds to a channel. `eventbus.Publish()` pushes a message to the channel,
+// and the handler in `eventbus.Subscribe()` will process the message coming out of the channel.
 type EventBus struct {
 	channels   *CowMap
 	bufferSize int
@@ -145,9 +147,9 @@ func (e *EventBus) Unsubscribe(topic string, handler any) error {
 	return nil
 }
 
-// Subscribe subscribes to a topic, return error if handler is not a function.
-// handler must be a function, and must have two parameters, the first parameter must be a string,
-// the type of the handler's second parameter must be consistent with the type of the payload in Publish
+// Subscribe subscribes to a topic, return an error if the handler is not a function.
+// The handler must have two parameters: the first parameter must be a string,
+// and the type of the handler's second parameter must be consistent with the type of the payload in `Publish()`
 func (e *EventBus) Subscribe(topic string, handler any) error {
 	typ := reflect.TypeOf(handler)
 	if typ.Kind() != reflect.Func {
@@ -169,8 +171,8 @@ func (e *EventBus) Subscribe(topic string, handler any) error {
 	return nil
 }
 
-// Publish trigger handlers defined for a topic. payload argument will be transferred to the handler.
-// The type of the payload must correspond to the second parameter of the handler in Subscribe
+// Publish triggers the handlers defined for a topic. The `payload` argument will be passed to the handler.
+// The type of the payload must correspond to the second parameter of the handler in `Subscribe()`.
 func (e *EventBus) Publish(topic string, payload any) error {
 	ch, ok := e.channels.Load(topic)
 
