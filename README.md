@@ -20,8 +20,8 @@ import (
 
 ### eventbus example
 ```
-func handler(topic string, payload int) {
-	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
+func handler(topic string, val int) {
+	fmt.Printf("topic:%s, val:%d\n", topic, val)
 }
 
 func main() {
@@ -34,12 +34,12 @@ func main() {
 
 ### pipe example
 ```
-func handler1(payload string) {
-	fmt.Printf("handler1 payload:%s\n", payload)
+func handler1(val string) {
+	fmt.Printf("handler1 val:%s\n", val)
 }
 
-func handler2(payload string) {
-	fmt.Printf("handler2 payload:%s\n", payload)
+func handler2(val string) {
+	fmt.Printf("handler2 val:%s\n", val)
 }
 
 func main() {
