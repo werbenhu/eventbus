@@ -19,7 +19,7 @@ import (
 ## Example
 
 ### eventbus example
-```
+```go
 func handler(topic string, val int) {
 	fmt.Printf("topic:%s, val:%d\n", topic, val)
 }
@@ -33,7 +33,7 @@ func main() {
 ```
 
 ### pipe example
-```
+```go
 func handler1(val string) {
 	fmt.Printf("handler1 val:%s\n", val)
 }
