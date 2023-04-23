@@ -24,7 +24,7 @@ import (
 ```
 
 ## EventBus 是什么？
-EventBus 是一个事件主题的容器，每个主题对应一个通道。`eventbus.Publish()` 方法将消息推送到通道，`eventbus.Subscribe(`) 方法中的handler将处理从通道出来的消息。
+EventBus 是对多个主题的封装，每个主题对应一个通道。`eventbus.Publish()` 方法将消息推送到通道，`eventbus.Subscribe(`) 方法中的handler将处理从通道出来的消息。
 
 ### EventBus 示例
 ```go
