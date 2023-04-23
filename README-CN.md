@@ -26,6 +26,10 @@ import (
 ## EventBus 是什么？
 EventBus 是对多个主题的封装，每个主题对应一个通道。`eventbus.Publish()` 方法将消息推送到通道，`eventbus.Subscribe(`) 方法中的handler将处理从通道出来的消息。
 
+如果要使用带缓冲的EventBus，可以使用 `eventbus.NewBuffered(bufferSize int)` 方法创建带缓冲的EventBus，这样会为每个topic都创建一个带缓冲的channel。
+
+EventBus使用一个Copy-On-Write的map管理handler和topic，所以不建议在有大量频繁的订阅和取消订阅的业务场景中使用。
+
 ### EventBus 示例
 ```go
 func handler(topic string, payload int) {
