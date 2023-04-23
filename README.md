@@ -20,15 +20,17 @@ import (
 
 ### eventbus example
 ```go
-func handler(topic string, val int) {
-	fmt.Printf("topic:%s, val:%d\n", topic, val)
+func handler(topic string, payload int) {
+	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
 }
 
 func main() {
-	eb := eventbus.New()
-	eb.Subscribe("testtopic", handler)
-	eb.Publish("testtopic", 100)
-	eb.Unsubscribe("testtopic", handler)
+	bus := eventbus.New()
+	bus.Subscribe("testtopic", handler)
+	bus.Publish("testtopic", 100)
+
+	time.Sleep(time.Millisecond)
+	bus.Unsubscribe("testtopic", handler)
 }
 ```
 
@@ -55,8 +57,9 @@ func main() {
 		}
 		wg.Done()
 	}(pipe)
-
 	wg.Wait()
+
+	time.Sleep(time.Millisecond)
 	pipe.Unsubscribe(handler1)
 	pipe.Unsubscribe(handler2)
 }
