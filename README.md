@@ -61,7 +61,7 @@ func main() {
 
 Pipe is a wrapper for a channel where there is no concept of a topic. Subscribers receive messages asynchronously. You can use `Pipe.Publish()` instead of `chan <-` and `Pipe.Subscribe()` instead of `<- chan`. If there are multiple subscribers, one message will be received by each subscriber.
 
-If you want to use a buffered channel, you can use `eventbus.NewPipe[T](bufferSize int)` to create a buffered pipe.
+If you want to use a buffered channel, you can use `eventbus.NewBufferedPipe[T](bufferSize int)` to create a buffered pipe.
 
 #### pipe example
 ```go

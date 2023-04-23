@@ -59,7 +59,7 @@ func main() {
 
 Pipe 是通道的一个封装，这里没有主题的概念。订阅者异步接收消息。您可以使用 `Pipe.Publish()` 方法代替 `chan <-`，使用 `Pipe.Subscribe()` 方法代替 `<-chan`。如果有多个订阅者，则每个订阅者将接收到发布出来的每一条消息。
 
-如果要使用带缓冲的通道，可以使用 `eventbus.NewPipe[T](bufferSize int)` 方法创建带缓冲的管道。
+如果要使用带缓冲的通道，可以使用 `eventbus.NewBufferedPipe[T](bufferSize int)` 方法创建带缓冲的管道。
 
 #### Pipe 示例
 ```go
