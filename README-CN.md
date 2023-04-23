@@ -7,7 +7,7 @@
 
 [English](README.md) | [简体中文](README-CN.md)
 # EventBus
-EventBus 是一个轻量级的事件总线，可以简化 Go 协程之间的通信。
+EventBus 是一个轻量级的事件发布/订阅框架，可以简化 Go 协程之间的通信。
 
 
 ## 安装
