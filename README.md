@@ -52,7 +52,7 @@ func main() {
 }
 ```
 
-## Use Pipes instead of channels
+## Use Pipe instead of channel
 
 Pipe is a wrapper for a channel. Subscribers receive messages asynchronously. You can use `Pipe.Publish()` instead of `chan <-` and `Pipe.Subscribe()` instead of `<- chan`. If there are multiple subscribers, one message will be received by each subscriber.
 
