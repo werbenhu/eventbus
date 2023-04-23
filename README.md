@@ -5,7 +5,7 @@
 <a href="https://pkg.go.dev/github.com/werbenhu/eventbus"><img src="https://pkg.go.dev/badge/github.com/werbenhu/eventbus.svg"></a>
 </div>
 
-English | [简体中文](README-CN.md)
+[English](README.md) | [简体中文](README-CN.md)
 # eventbus
 A lightweight eventbus that simplifies communication between goroutines.
 

@@ -5,6 +5,7 @@
 <a href="https://pkg.go.dev/github.com/werbenhu/eventbus"><img src="https://pkg.go.dev/badge/github.com/werbenhu/eventbus.svg"></a>
 </div>
 
+[English](README.md) | [简体中文](README-CN.md)
 # EventBus
 EventBus 是一个轻量级的事件总线，可以简化 Go 协程之间的通信。
 
