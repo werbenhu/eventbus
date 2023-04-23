@@ -245,7 +245,7 @@ func Benchmark_CowMapStore(b *testing.B) {
 	}
 }
 
-func Benchmark_CircleLoad(b *testing.B) {
+func Benchmark_CowMapLoad(b *testing.B) {
 	m := NewCowMap()
 	for i := 0; i < 100; i++ {
 		m.Store(i, strconv.Itoa(i))

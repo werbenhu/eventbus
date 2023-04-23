@@ -7,21 +7,29 @@ import (
 type Handler[T any] func(payload T)
 
 type Pipe[T any] struct {
+	sync.RWMutex
 	bufferSize int
-	ch         chan T
-	readers    sync.Map
+	channel    chan T
+	handlers   *CowMap
+	closed     bool
+	stopCh     chan any
 }
 
+// NewPipe create a unbuffered pipe
 func NewPipe[T any]() *Pipe[T] {
 	p := &Pipe[T]{
 		bufferSize: -1,
-		ch:         make(chan T),
+		channel:    make(chan T),
+		stopCh:     make(chan any),
+		handlers:   NewCowMap(),
 	}
 
 	go p.loop()
 	return p
 }
 
+// NewPipe create a buffered pipe, bufferSize is the buffer size of the pipe
+// When create a buffered pipe. You can publish into the Pipe without a corresponding concurrent subscriber.
 func NewBufferedPipe[T any](bufferSize int) *Pipe[T] {
 	if bufferSize <= 0 {
 		bufferSize = 1
@@ -29,35 +37,68 @@ func NewBufferedPipe[T any](bufferSize int) *Pipe[T] {
 
 	p := &Pipe[T]{
 		bufferSize: bufferSize,
-		ch:         make(chan T, bufferSize),
+		channel:    make(chan T),
+		stopCh:     make(chan any),
+		handlers:   NewCowMap(),
 	}
 
 	go p.loop()
 	return p
 }
 
+// loop loops forever, receiving published message from the pipe, transfer payload to subscriber by calling handlers
 func (p *Pipe[T]) loop() {
 	for {
-		payload := <-p.ch
-		p.readers.Range(func(key any, fn any) bool {
-			fn.(Handler[T])(payload)
-			return true
-		})
+		select {
+		case payload := <-p.channel:
+			p.handlers.Range(func(key any, fn any) bool {
+				fn.(Handler[T])(payload)
+				return true
+			})
+		case <-p.stopCh:
+			return
+		}
 	}
 }
 
-func (p *Pipe[T]) Subscribe(reader Handler[T]) error {
-	p.readers.Store(&reader, reader)
+// subscribe add a handler to a pipe, return error if the pipe is closed.
+func (p *Pipe[T]) Subscribe(handler Handler[T]) error {
+	p.RLock()
+	defer p.RUnlock()
+	if p.closed {
+		return ErrChannelClosed
+	}
+	p.handlers.Store(&handler, handler)
 	return nil
 }
 
-func (p *Pipe[T]) Publish(payload T) {
-	p.ch <- payload
+// unsubscribe removes handler defined for this pipe.
+func (p *Pipe[T]) Unsubscribe(handler Handler[T]) error {
+	p.RLock()
+	defer p.RUnlock()
+	if p.closed {
+		return ErrChannelClosed
+	}
+	p.handlers.Delete(&handler)
+	return nil
 }
 
-func (p *Pipe[T]) Close() {
-	if p.ch != nil {
-		close(p.ch)
-		p.ch = nil
+// publish trigger handlers defined for this pipe. payload argument will be transferred to handlers.
+func (p *Pipe[T]) Publish(payload T) error {
+	p.RLock()
+	defer p.RUnlock()
+	if p.closed {
+		return ErrChannelClosed
 	}
+	p.channel <- payload
+	return nil
+}
+
+// close closes the pipe
+func (p *Pipe[T]) Close() {
+	p.Lock()
+	defer p.Unlock()
+	p.closed = true
+	p.stopCh <- struct{}{}
+	close(p.channel)
 }

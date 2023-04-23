@@ -2,33 +2,79 @@ package eventbus
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func pipesub1(val int) {
-	fmt.Printf("val:%d\n", val)
-}
-func pipesub2(val int) {
-	fmt.Printf("va2:%d\n", val)
-}
-func pipesub3(val int) {
-	fmt.Printf("va3:%d\n", val)
+func pipeSubOne(val int) {
+	fmt.Printf("pipeSubOne:%d\n", val)
 }
 
-func Test_pipePublish(t *testing.T) {
-	pipe := NewPipe[int]()
-	pipe.Subscribe(pipesub1)
-	pipe.Subscribe(pipesub2)
-	pipe.Subscribe(pipesub3)
+func pipeSubTwo(val int) {
+	fmt.Printf("pipeSubTwo:%d\n", val)
+}
+
+func Test_NewPipe(t *testing.T) {
+	p := NewPipe[int]()
+	assert.NotNil(t, p)
+	assert.NotNil(t, p.channel)
+	assert.NotNil(t, p.stopCh)
+	assert.NotNil(t, p.handlers)
+	p.Close()
+}
+
+func Test_PipeSubscribe(t *testing.T) {
+	p := NewPipe[int]()
+	assert.NotNil(t, p)
+	assert.NotNil(t, p.channel)
+
+	err := p.Subscribe(pipeSubOne)
+	assert.Nil(t, err)
+	p.Close()
+	err = p.Subscribe(pipeSubTwo)
+	assert.Equal(t, ErrChannelClosed, err)
+}
+
+func Test_PipeUnsubscribe(t *testing.T) {
+	p := NewPipe[int]()
+	assert.NotNil(t, p)
+	assert.NotNil(t, p.channel)
+
+	err := p.Subscribe(pipeSubOne)
+	assert.Nil(t, err)
+	err = p.Unsubscribe(pipeSubOne)
+	assert.Nil(t, err)
+
+	err = p.Subscribe(pipeSubOne)
+	assert.Nil(t, err)
+	p.Close()
+	err = p.Unsubscribe(pipeSubOne)
+	assert.Equal(t, ErrChannelClosed, err)
+}
+
+func Test_PipePublish(t *testing.T) {
+	p := NewPipe[int]()
+	assert.NotNil(t, p)
+	assert.NotNil(t, p.channel)
+
+	err := p.Subscribe(pipeSubOne)
+	time.Sleep(time.Millisecond)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
-		for i := 0; i < 100000; i++ {
-			pipe.Publish(i)
+		for i := 0; i < 10000; i++ {
+			err := p.Publish(i)
+			assert.Nil(t, err)
 		}
+		wg.Done()
 	}()
+	wg.Wait()
 
-	time.Sleep(1000 * time.Millisecond)
-
-	// ch.close()
-	// ch.publish(13)
+	p.Close()
+	err = p.Publish(1)
+	assert.Equal(t, ErrChannelClosed, err)
 }
