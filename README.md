@@ -37,6 +37,7 @@ func main() {
 
 	time.Sleep(time.Millisecond)
 	bus.Unsubscribe("testtopic", handler)
+	bus.Close()
 }
 ```
 
@@ -68,5 +69,7 @@ func main() {
 	time.Sleep(time.Millisecond)
 	pipe.Unsubscribe(handler1)
 	pipe.Unsubscribe(handler2)
+	pipe.Close()
 }
+
 ```
