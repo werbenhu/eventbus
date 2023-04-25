@@ -7,8 +7,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_SingletonSubscribe(t *testing.T) {
+func initSingleton() {
 	singleton = nil
+	singleton = New()
+}
+
+func Test_SingletonSubscribe(t *testing.T) {
+	initSingleton()
 	err := Subscribe("testtopic", busHandlerOne)
 	assert.Nil(t, err)
 	assert.NotNil(t, singleton)
@@ -33,7 +38,7 @@ func Test_SingletonSubscribe(t *testing.T) {
 }
 
 func Test_SingletonUnsubscribe(t *testing.T) {
-	singleton = nil
+	initSingleton()
 
 	err := Unsubscribe("testtopic", busHandlerOne)
 	assert.Equal(t, ErrNoSubscriber, err)
@@ -51,7 +56,7 @@ func Test_SingletonUnsubscribe(t *testing.T) {
 }
 
 func Test_SingletonPublish(t *testing.T) {
-	singleton = nil
+	initSingleton()
 
 	err := Publish("testtopic", 1)
 	assert.Nil(t, err)
@@ -61,14 +66,17 @@ func Test_SingletonPublish(t *testing.T) {
 	assert.Nil(t, err)
 
 	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		for i := 0; i < 100; i++ {
-			err := Publish("testtopic", i)
-			assert.Nil(t, err)
-		}
-		wg.Done()
-	}()
+	wg.Add(100)
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			for i := 0; i < 100; i++ {
+				err := Publish("testtopic", i)
+				assert.Nil(t, err)
+			}
+			wg.Done()
+		}()
+	}
 	wg.Wait()
 	Close()
 }
