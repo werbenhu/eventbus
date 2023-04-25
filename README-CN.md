@@ -65,7 +65,7 @@ func main() {
 }
 ```
 
-### 使用全局的单例对象EventBus对象
+### 使用全局的EventBus单例对象
 
 为了更方便的使用EventBus, 这里有一个全局的EventBus单例对象，这个对象内部的channel是无缓冲的，直接使用`eventbus.Subscribe()`,`eventbus.Publish()`,`eventbus.Unsubscribe()`，将会调用该单例对象对应的方法。
 
