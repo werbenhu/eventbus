@@ -91,13 +91,13 @@ func main() {
 	go func() {
 		// 异步方式发布消息
 		for i := 0; i < 100; i++ {
-			// eventbus.Subscribe() 将调用全局单例singleton.Publish()方法
+			// 调用全局单例singleton.Publish()方法
 			eventbus.Publish("testtopic", i)
 		}
 		// 同步方式发布消息
 		for i := 100; i < 200; i++ {
-			// eventbus.Subscribe() 将调用全局单例singleton.Publish()方法
-			eventbus.Publish("testtopic", i)
+			// 调用全局单例singleton.PublishSync()方法
+			eventbus.PublishSync("testtopic", i)
 		}
 		wg.Done()
 	}()
