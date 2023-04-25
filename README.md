@@ -58,6 +58,48 @@ func main() {
 }
 ```
 
+### Using the global singleton object of EventBus
+To make it more convenient to use EventBus, here is a global singleton object of EventBus. The channel inside this object is unbuffered. By directly using `eventbus.Subscribe()`, `eventbus.Publish()`, and `eventbus.Unsubscribe()`, the corresponding methods of this singleton object will be called.
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+
+	"github.com/werbenhu/eventbus"
+)
+
+func handler(topic string, payload int) {
+	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
+}
+
+func main() {
+	// eventbus.Subscribe() will call the singleton.Subscribe() method of the global singleton
+	eventbus.Subscribe("testtopic", handler)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		for i := 0; i < 100; i++ {
+			// eventbus.Publish() will call the singleton.Publish() method
+			eventbus.Publish("testtopic", i)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+
+	time.Sleep(time.Millisecond)
+	// eventbus.Unsubscribe() will call the singleton.Unsubscribe() method
+	eventbus.Unsubscribe("testtopic", handler)
+
+	// eventbus.Close() will call the singleton.Close() method
+	eventbus.Close()
+}
+```
+
 ## Use Pipe instead of channel
 
 Pipe is a wrapper for a channel where there is no concept of a topic. Subscribers receive messages asynchronously. You can use `Pipe.Publish()` instead of `chan <-` and `Pipe.Subscribe()` instead of `<- chan`. If there are multiple subscribers, one message will be received by each subscriber.

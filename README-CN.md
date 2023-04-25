@@ -25,7 +25,7 @@ import (
 ```
 
 ## EventBus 是什么？
-EventBus 是对多个主题的封装，每个主题对应一个通道。`eventbus.Publish()` 方法将消息推送到通道，`eventbus.Subscribe(`) 方法中的handler将处理从通道出来的消息。
+EventBus 是对多个主题的封装，每个主题对应一个通道。`Publish()` 方法将消息推送到通道，`Subscribe(`) 方法中的handler将处理从通道出来的消息。
 
 如果要使用带缓冲的EventBus，可以使用 `eventbus.NewBuffered(bufferSize int)` 方法创建带缓冲的EventBus，这样会为每个topic都创建一个带缓冲的channel。
 
@@ -33,6 +33,15 @@ EventBus使用一个Copy-On-Write的map管理handler和topic，所以不建议�
 
 ### EventBus 示例
 ```go
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/werbenhu/eventbus"
+)
+
 func handler(topic string, payload int) {
 	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
 }
@@ -53,6 +62,49 @@ func main() {
 	time.Sleep(time.Millisecond)
 	bus.Unsubscribe("testtopic", handler)
 	bus.Close()
+}
+```
+
+### 使用全局的单例对象EventBus对象
+
+为了更方便的使用EventBus, 这里有一个全局的EventBus单例对象，这个对象内部的channel是无缓冲的，直接使用`eventbus.Subscribe()`,`eventbus.Publish()`,`eventbus.Unsubscribe()`，将会调用该单例对象对应的方法。
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+
+	"github.com/werbenhu/eventbus"
+)
+
+func handler(topic string, payload int) {
+	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
+}
+
+func main() {
+	// eventbus.Subscribe() 将调用全局单例singleton.Subscribe()方法
+	eventbus.Subscribe("testtopic", handler)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		for i := 0; i < 100; i++ {
+			// eventbus.Subscribe() 将调用全局单例singleton.Publish()方法
+			eventbus.Publish("testtopic", i)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+
+	time.Sleep(time.Millisecond)
+	// eventbus.Unsubscribe() 将调用全局单例singleton.Unsubscribe()方法
+	eventbus.Unsubscribe("testtopic", handler)
+
+	// eventbus.Close() 将调用全局单例singleton.Close()方法
+	eventbus.Close()
 }
 ```
 
