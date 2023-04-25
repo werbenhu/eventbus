@@ -130,9 +130,11 @@ func main() {
 
 ## Use Pipe instead of channel
 
-Pipe is a wrapper for a channel where there is no concept of a topic. Subscribers receive messages asynchronously. You can use `Pipe.Publish()` instead of `chan <-` and `Pipe.Subscribe()` instead of `<- chan`. If there are multiple subscribers, one message will be received by each subscriber.
+Pipe is a wrapper for a channel without the concept of topics. Publishers publish messages and subscribers receive messages. You can use the `Pipe.Publish()` method instead of `chan <-`, and use the `Pipe.Subscribe()` method instead of `<-chan`. If there are multiple subscribers, each subscriber will receive every message that is published.
 
-If you want to use a buffered channel, you can use `eventbus.NewBufferedPipe[T](bufferSize int)` to create a buffered pipe.
+If you want to use a buffered channel, you can use the `eventbus.NewBufferedPipe[T](bufferSize int)` method to create a buffered pipe.
+
+Pipe also supports synchronous and asynchronous message publishing. If you need to use a synchronous way, you can call `Pipe.PublishSync()`.
 
 #### pipe example
 ```go
@@ -165,7 +167,7 @@ func main() {
 		// Synchronously publish messages
 		for i := 100; i < 200; i++ {
 			// eventbus.Publish() will call the global singleton's Publish() method
-			eventbus.Publish("testtopic", i)
+			eventbus.PublishSync("testtopic", i)
 		}
 		wg.Done()
 	}()

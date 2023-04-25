@@ -80,3 +80,29 @@ func Test_SingletonPublish(t *testing.T) {
 	wg.Wait()
 	Close()
 }
+
+func Test_SingletonPublishSync(t *testing.T) {
+	initSingleton()
+
+	err := Publish("testtopic", 1)
+	assert.Nil(t, err)
+	assert.NotNil(t, singleton)
+
+	err = Subscribe("testtopic", busHandlerOne)
+	assert.Nil(t, err)
+
+	var wg sync.WaitGroup
+	wg.Add(100)
+
+	for i := 0; i < 100; i++ {
+		go func() {
+			for i := 0; i < 100; i++ {
+				err := PublishSync("testtopic", i)
+				assert.Nil(t, err)
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	Close()
+}
