@@ -204,3 +204,20 @@ func Test_EventBusPublish(t *testing.T) {
 	wg.Wait()
 	bus.Close()
 }
+
+func BenchmarkEventBusPublish(b *testing.B) {
+	bus := New()
+	bus.Subscribe("testtopic", busHandlerOne)
+
+	b.ResetTimer()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		for i := 0; i < b.N; i++ {
+			bus.Publish("testtopic", i)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+	bus.Close()
+}
