@@ -66,6 +66,17 @@ If you want to use a buffered channel, you can use `eventbus.NewBufferedPipe[T](
 
 #### pipe example
 ```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+	"sync"
+	"time"
+
+	"github.com/werbenhu/eventbus"
+)
+
 func handler1(val string) {
 	fmt.Printf("handler1 val:%s\n", val)
 }
@@ -81,20 +92,19 @@ func main() {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func(p *eventbus.Pipe[string]) {
+	go func() {
 		for i := 0; i < 100; i++ {
-			p.Publish(strconv.Itoa(i))
+			pipe.Publish(strconv.Itoa(i))
 		}
 		wg.Done()
-	}(pipe)
+	}()
 	wg.Wait()
 
-	// Subscribers receive messages asynchronously. 
+	// Subscribers receive messages asynchronously.
 	// To ensure that subscribers can receive all messages, there is a delay before unsubscribe
 	time.Sleep(time.Millisecond)
 	pipe.Unsubscribe(handler1)
 	pipe.Unsubscribe(handler2)
 	pipe.Close()
 }
-
 ```

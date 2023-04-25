@@ -49,7 +49,7 @@ func main() {
 	// payload 的类型必须与 `Subscribe()` 中handler的第二个参数类型相对应。
 	bus.Publish("testtopic", 100)
 
-	// 订阅者异步接收消息。为了确保订阅者可以接收所有消息，在取消订阅之前需要有一个延迟。
+	// 订阅者异步接收消息。为了确保订阅者可以接收所有消息，这里在取消订阅之前给了一点延迟。
 	time.Sleep(time.Millisecond)
 	bus.Unsubscribe("testtopic", handler)
 	bus.Close()
@@ -64,6 +64,17 @@ Pipe 是通道的一个封装，这里没有主题的概念。订阅者异步接
 
 #### Pipe 示例
 ```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+	"sync"
+	"time"
+
+	"github.com/werbenhu/eventbus"
+)
+
 func handler1(val string) {
 	fmt.Printf("handler1 val:%s\n", val)
 }
@@ -79,16 +90,15 @@ func main() {
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func(p *eventbus.Pipe[string]) {
+	go func() {
 		for i := 0; i < 100; i++ {
-			p.Publish(strconv.Itoa(i))
+			pipe.Publish(strconv.Itoa(i))
 		}
 		wg.Done()
-	}(pipe)
+	}()
 	wg.Wait()
 
-	// Subscribers receive messages asynchronously. 
-	// To ensure that subscribers can receive all messages, there is a delay before unsubscribe
+	// 订阅者异步接收消息。为了确保订阅者可以接收所有消息，这里在取消订阅之前给了一点延迟。
 	time.Sleep(time.Millisecond)
 	pipe.Unsubscribe(handler1)
 	pipe.Unsubscribe(handler2)
