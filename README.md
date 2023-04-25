@@ -8,8 +8,7 @@
 
 [English](README.md) | [简体中文](README-CN.md)
 # eventbus
-A lightweight eventbus that simplifies communication between goroutines.
-
+A lightweight eventbus that simplifies communication between goroutines that supports synchronous and asynchronous message publishing. It simplifies communication between goroutines.
 
 ## Installation
 
