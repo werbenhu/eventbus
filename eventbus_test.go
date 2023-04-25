@@ -238,7 +238,7 @@ func Test_EventBusPublishSync(t *testing.T) {
 	assert.Equal(t, -1, bus.bufferSize)
 	assert.NotNil(t, bus.channels)
 
-	err := bus.Publish("testtopic", 1)
+	err := bus.PublishSync("testtopic", 1)
 	assert.Nil(t, err)
 
 	err = bus.Subscribe("testtopic", busHandlerOne)
