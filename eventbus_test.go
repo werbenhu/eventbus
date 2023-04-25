@@ -3,6 +3,7 @@ package eventbus
 import (
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -89,7 +90,6 @@ func Test_channelPublish(t *testing.T) {
 	assert.NotNil(t, ch)
 	assert.NotNil(t, ch.channel)
 	assert.Equal(t, "test_topic", ch.topic)
-
 	ch.subscribe(busHandlerOne)
 
 	var wg sync.WaitGroup
@@ -104,8 +104,11 @@ func Test_channelPublish(t *testing.T) {
 	}()
 	wg.Wait()
 
+	err := ch.publish(nil)
+	assert.Nil(t, err)
+	time.Sleep(time.Millisecond)
 	ch.close()
-	err := ch.publish(1)
+	err = ch.publish(1)
 	assert.Equal(t, ErrChannelClosed, err)
 }
 

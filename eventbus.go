@@ -60,7 +60,6 @@ func (c *channel) loop() {
 					payload = reflect.ValueOf(param)
 				}
 
-				payload = reflect.ValueOf(param)
 				(*handler).Call([]reflect.Value{topic, payload})
 				return true
 			})
