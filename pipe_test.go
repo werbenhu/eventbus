@@ -23,6 +23,16 @@ func Test_NewPipe(t *testing.T) {
 	p.Close()
 }
 
+func Test_NewBufferedPipe(t *testing.T) {
+	p := NewBufferedPipe[int](100)
+	assert.NotNil(t, p)
+	assert.NotNil(t, p.channel)
+	assert.Equal(t, 100, cap(p.channel))
+	assert.NotNil(t, p.stopCh)
+	assert.NotNil(t, p.handlers)
+	p.Close()
+}
+
 func Test_PipeSubscribe(t *testing.T) {
 	p := NewPipe[int]()
 	assert.NotNil(t, p)

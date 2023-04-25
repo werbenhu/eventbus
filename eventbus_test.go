@@ -25,6 +25,7 @@ func Test_newChannel(t *testing.T) {
 	bufferedCh := newChannel("test_topic", 100)
 	assert.NotNil(t, bufferedCh)
 	assert.NotNil(t, bufferedCh.channel)
+	assert.Equal(t, 100, cap(bufferedCh.channel))
 	assert.Equal(t, "test_topic", bufferedCh.topic)
 	assert.NotNil(t, bufferedCh.stopCh)
 	assert.NotNil(t, bufferedCh.handlers)
@@ -68,6 +69,19 @@ func Test_channelUnsubscribe(t *testing.T) {
 	ch.close()
 	err = ch.unsubscribe(busHandlerTwo)
 	assert.Equal(t, ErrChannelClosed, err)
+}
+
+func Test_channelClose(t *testing.T) {
+	ch := newChannel("test_topic", -1)
+	assert.NotNil(t, ch)
+	assert.NotNil(t, ch.channel)
+	assert.Equal(t, "test_topic", ch.topic)
+
+	err := ch.subscribe(busHandlerOne)
+	assert.Nil(t, err)
+	ch.close()
+	assert.Equal(t, 0, ch.handlers.Len())
+	ch.close()
 }
 
 func Test_channelPublish(t *testing.T) {
