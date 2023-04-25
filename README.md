@@ -30,7 +30,7 @@ import (
 
 If you want to use a buffered EventBus, you can create one using the `eventbus.NewBuffered(bufferSize int)` method, which creates a buffered channel for each topic.
 
-EventBus uses a `Copy-On-Write map` to manage handlers and topics, so it is not recommended for use in scenarios with a large number of frequent subscriptions and unsubscriptions.
+EventBus uses a `Copy-On-Write` map to manage handlers and topics, so it is not recommended for use in scenarios with a large number of frequent subscriptions and unsubscriptions.
 
 ### eventbus example
 ```go
