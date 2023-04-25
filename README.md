@@ -102,8 +102,7 @@ func main() {
 		}
 		// Synchronously publish messages
 		for i := 100; i < 200; i++ {
-			// eventbus.Publish() will call the global singleton's Publish() method
-			eventbus.Publish("testtopic", i)
+			eventbus.PublishSync("testtopic", i)
 		}
 		wg.Done()
 	}()
