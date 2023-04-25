@@ -94,6 +94,30 @@ func Test_PipePublish(t *testing.T) {
 	assert.Equal(t, ErrChannelClosed, err)
 }
 
+func Test_PipePublishSync(t *testing.T) {
+	p := NewPipe[int]()
+	assert.NotNil(t, p)
+	assert.NotNil(t, p.channel)
+
+	err := p.Subscribe(pipeHandlerOne)
+	time.Sleep(time.Millisecond)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		for i := 0; i < 1000; i++ {
+			err := p.PublishSync(i)
+			assert.Nil(t, err)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+
+	p.Close()
+	err = p.PublishSync(1)
+	assert.Equal(t, ErrChannelClosed, err)
+}
+
 func Test_PipeClose(t *testing.T) {
 	p := NewPipe[int]()
 	assert.NotNil(t, p)
@@ -114,7 +138,7 @@ func BenchmarkPipePublish(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		pipe.Publish(i)
+		pipe.PublishSync(i)
 	}
 }
 

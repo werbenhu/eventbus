@@ -37,32 +37,37 @@ func newChannel(topic string, bufferSize int) *channel {
 	return c
 }
 
+// transfer calls all the handlers in the channel with the given payload.
+// It iterates over the handlers in the handlers map to call them with the payload.
+func (c *channel) transfer(topic string, payload any) {
+	var payloadValue reflect.Value
+	topicValue := reflect.ValueOf(c.topic)
+
+	c.handlers.Range(func(key any, fn any) bool {
+		handler := fn.(*reflect.Value)
+		typ := handler.Type()
+
+		if payload == nil {
+			// If the parameter passed to the handler is nil,
+			// it initializes a new payload element based on the
+			// type of the second parameter of the handler using the reflect package.
+			payloadValue = reflect.New(typ.In(1)).Elem()
+		} else {
+			payloadValue = reflect.ValueOf(payload)
+		}
+		(*handler).Call([]reflect.Value{topicValue, payloadValue})
+		return true
+	})
+}
+
 // loop listens to the channel and calls handlers with payload.
 // It receives messages from the channel and then iterates over the handlers
 // in the handlers map to call them with the payload.
 func (c *channel) loop() {
-	topic := reflect.ValueOf(c.topic)
 	for {
 		select {
-		case param := <-c.channel:
-			c.handlers.Range(func(key any, fn any) bool {
-
-				var payload reflect.Value
-				handler := fn.(*reflect.Value)
-				typ := handler.Type()
-
-				if param == nil {
-					// If the parameter passed to the handler is nil,
-					// it initializes a new payload element based on the
-					// type of the second parameter of the handler using the reflect package.
-					payload = reflect.New(typ.In(1)).Elem()
-				} else {
-					payload = reflect.ValueOf(param)
-				}
-
-				(*handler).Call([]reflect.Value{topic, payload})
-				return true
-			})
+		case payload := <-c.channel:
+			c.transfer(c.topic, payload)
 		case <-c.stopCh:
 			return
 		}
@@ -81,7 +86,22 @@ func (c *channel) subscribe(handler any) error {
 	return nil
 }
 
-// publish triggers the handlers defined for this channel. The `payload` argument will be passed to the handler.
+// publishSync triggers the handlers defined for this channel synchronously.
+// The payload argument will be passed to the handler.
+// It does not use channels and instead directly calls the handler function.
+func (c *channel) publishSync(payload any) error {
+	c.RLock()
+	defer c.RUnlock()
+	if c.closed {
+		return ErrChannelClosed
+	}
+	c.transfer(c.topic, payload)
+	return nil
+}
+
+// publish triggers the handlers defined for this channel asynchronously.
+// The `payload` argument will be passed to the handler.
+// It uses the channel to asynchronously call the handler.
 func (c *channel) publish(payload any) error {
 	c.RLock()
 	defer c.RUnlock()
@@ -179,7 +199,9 @@ func (e *EventBus) Subscribe(topic string, handler any) error {
 	return ch.(*channel).subscribe(handler)
 }
 
-// Publish triggers the handlers defined for a topic. The `payload` argument will be passed to the handler.
+// publish triggers the handlers defined for this channel asynchronously.
+// The `payload` argument will be passed to the handler.
+// It uses the channel to asynchronously call the handler.
 // The type of the payload must correspond to the second parameter of the handler in `Subscribe()`.
 func (e *EventBus) Publish(topic string, payload any) error {
 	ch, ok := e.channels.Load(topic)
@@ -191,6 +213,21 @@ func (e *EventBus) Publish(topic string, payload any) error {
 	}
 
 	return ch.(*channel).publish(payload)
+}
+
+// publishSync triggers the handlers defined for this channel synchronously.
+// The payload argument will be passed to the handler.
+// It does not use channels and instead directly calls the handler function.
+func (e *EventBus) PublishSync(topic string, payload any) error {
+	ch, ok := e.channels.Load(topic)
+
+	if !ok {
+		ch = newChannel(topic, e.bufferSize)
+		e.channels.Store(topic, ch)
+		go ch.(*channel).loop()
+	}
+
+	return ch.(*channel).publishSync(payload)
 }
 
 // Close closes the eventbus

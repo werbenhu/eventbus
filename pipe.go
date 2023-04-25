@@ -6,9 +6,10 @@ import (
 
 type Handler[T any] func(payload T)
 
-// Pipe is a wrapper of channel. Subscribers will receive messages asynchronously.
-// You can use Pipe.Publish() instead of chan <- and Pipe.Subscribe() instead of <- chan.
-// If there are multiple subscribers, one message will be received by each subscriber.
+// Pipe is a wrapper for a channel that allows for asynchronous message passing to subscribers.
+// Use Pipe.Publish() instead of `chan<-` and Pipe.Subscribe() instead of `<-chan`.
+// To pass messages to subscribers synchronously, use Pipe.PublishSync(), which does not use a channel.
+// If multiple subscribers exist, each subscriber will receive the message.
 type Pipe[T any] struct {
 	sync.RWMutex
 	bufferSize int
@@ -86,7 +87,7 @@ func (p *Pipe[T]) Unsubscribe(handler Handler[T]) error {
 	return nil
 }
 
-// publish trigger handlers defined for this pipe. payload argument will be transferred to handlers.
+// Publish triggers the handlers defined for this pipe, transferring the payload to the handlers.
 func (p *Pipe[T]) Publish(payload T) error {
 	p.RLock()
 	defer p.RUnlock()
@@ -94,6 +95,21 @@ func (p *Pipe[T]) Publish(payload T) error {
 		return ErrChannelClosed
 	}
 	p.channel <- payload
+	return nil
+}
+
+// PublishSync triggers the handlers defined for this pipe synchronously, without using a channel.
+// The payload will be passed directly to the handlers.
+func (p *Pipe[T]) PublishSync(payload T) error {
+	p.RLock()
+	defer p.RUnlock()
+	if p.closed {
+		return ErrChannelClosed
+	}
+	p.handlers.Range(func(key any, fn any) bool {
+		fn.(Handler[T])(payload)
+		return true
+	})
 	return nil
 }
 

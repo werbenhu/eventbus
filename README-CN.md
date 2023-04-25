@@ -8,7 +8,7 @@
 
 [English](README.md) | [简体中文](README-CN.md)
 # EventBus
-EventBus 是一个轻量级的事件发布/订阅框架，可以简化 Go 协程之间的通信。
+EventBus 是一个轻量级的事件发布/订阅框架，支持同步和异步发布消息，它可以简化 Go 协程之间的通信。
 
 
 ## 安装
@@ -25,11 +25,19 @@ import (
 ```
 
 ## EventBus 是什么？
-EventBus 是对多个主题的封装，每个主题对应一个通道。`Publish()` 方法将消息推送到通道，`Subscribe(`) 方法中的handler将处理从通道出来的消息。
+
+EventBus同时支持同步和异步的方式发布消息。
+
+#### 异步的方式
+在EventBus里，每个主题对应一个通道。`Publish()` 方法将消息推送到通道，`Subscribe(`) 方法中的handler将处理从通道出来的消息。
 
 如果要使用带缓冲的EventBus，可以使用 `eventbus.NewBuffered(bufferSize int)` 方法创建带缓冲的EventBus，这样会为每个topic都创建一个带缓冲的channel。
 
 EventBus使用一个Copy-On-Write的map管理handler和topic，所以不建议在有大量频繁的订阅和取消订阅的业务场景中使用。
+
+#### 同步的方式
+同步的方式下EventBus不使用channel，而是通过直接调用handler将消息传递给订阅者。如果想同步的方式发布消息，使用eventbus.PublishSync()函数即可。
+
 
 ### EventBus 示例
 ```go
@@ -54,11 +62,13 @@ func main() {
 	// handler的第二个参数类型必须与 `Publish()` 中的 payload 类型一致。
 	bus.Subscribe("testtopic", handler)
 
-	// Publish() 方法触发为主题定义的handler。`payload` 参数将传递给handler。
-	// payload 的类型必须与 `Subscribe()` 中handler的第二个参数类型相对应。
+	// 异步方式发布消息
 	bus.Publish("testtopic", 100)
 
-	// 订阅者异步接收消息。为了确保订阅者可以接收所有消息，这里在取消订阅之前给了一点延迟。
+	//同步方式发布消息
+	bus.PublishSync("testtopic", 200)
+
+	// 订阅者接收消息。为了确保订阅者可以接收完所有消息的异步消息，这里在取消订阅之前给了一点延迟。
 	time.Sleep(time.Millisecond)
 	bus.Unsubscribe("testtopic", handler)
 	bus.Close()
@@ -91,7 +101,13 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
+		//异步方式发布消息
 		for i := 0; i < 100; i++ {
+			// eventbus.Subscribe() 将调用全局单例singleton.Publish()方法
+			eventbus.Publish("testtopic", i)
+		}
+		//同步方式发布消息
+		for i := 100; i < 200; i++ {
 			// eventbus.Subscribe() 将调用全局单例singleton.Publish()方法
 			eventbus.Publish("testtopic", i)
 		}
@@ -113,6 +129,8 @@ func main() {
 Pipe 是通道的一个封装，这里没有主题的概念。订阅者异步接收消息。您可以使用 `Pipe.Publish()` 方法代替 `chan <-`，使用 `Pipe.Subscribe()` 方法代替 `<-chan`。如果有多个订阅者，则每个订阅者将接收到发布出来的每一条消息。
 
 如果要使用带缓冲的通道，可以使用 `eventbus.NewBufferedPipe[T](bufferSize int)` 方法创建带缓冲的管道。
+
+
 
 #### Pipe 示例
 ```go
@@ -143,14 +161,18 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
+		//异步方式发布消息
 		for i := 0; i < 100; i++ {
 			pipe.Publish(strconv.Itoa(i))
+		}
+		//同步方式发布消息
+		for i := 100; i < 200; i++ {
+			pipe.PublishSync(strconv.Itoa(i))
 		}
 		wg.Done()
 	}()
 	wg.Wait()
 
-	// 订阅者异步接收消息。为了确保订阅者可以接收所有消息，这里在取消订阅之前给了一点延迟。
 	time.Sleep(time.Millisecond)
 	pipe.Unsubscribe(handler1)
 	pipe.Unsubscribe(handler2)

@@ -33,7 +33,13 @@ func Publish(topic string, payload any) error {
 	return singleton.Publish(topic, payload)
 }
 
-// Close closes the singleton
+// PublishSync is a synchronous version of Publish that triggers the handlers defined for a topic with the given payload.
+// The type of the payload must correspond to the second parameter of the handler in `Subscribe()`.
+func PublishSync(topic string, payload any) error {
+	return singleton.Publish(topic, payload)
+}
+
+// Close closes the singleton instance of EventBus.
 func Close() {
 	singleton.Close()
 }

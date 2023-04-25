@@ -112,6 +112,33 @@ func Test_channelPublish(t *testing.T) {
 	assert.Equal(t, ErrChannelClosed, err)
 }
 
+func Test_channelPublishSync(t *testing.T) {
+	ch := newChannel("test_topic", -1)
+	assert.NotNil(t, ch)
+	assert.NotNil(t, ch.channel)
+	assert.Equal(t, "test_topic", ch.topic)
+	ch.subscribe(busHandlerOne)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		for i := 0; i < 100; i++ {
+			err := ch.publish(i)
+			assert.Nil(t, err)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+
+	err := ch.publishSync(nil)
+	assert.Nil(t, err)
+	time.Sleep(time.Millisecond)
+	ch.close()
+	err = ch.publishSync(1)
+	assert.Equal(t, ErrChannelClosed, err)
+}
+
 func Test_New(t *testing.T) {
 	bus := New()
 	assert.NotNil(t, bus)
@@ -205,6 +232,31 @@ func Test_EventBusPublish(t *testing.T) {
 	bus.Close()
 }
 
+func Test_EventBusPublishSync(t *testing.T) {
+	bus := New()
+	assert.NotNil(t, bus)
+	assert.Equal(t, -1, bus.bufferSize)
+	assert.NotNil(t, bus.channels)
+
+	err := bus.Publish("testtopic", 1)
+	assert.Nil(t, err)
+
+	err = bus.Subscribe("testtopic", busHandlerOne)
+	assert.Nil(t, err)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		for i := 0; i < 100; i++ {
+			err := bus.PublishSync("testtopic", i)
+			assert.Nil(t, err)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+	bus.Close()
+}
+
 func BenchmarkEventBusPublish(b *testing.B) {
 	bus := New()
 	bus.Subscribe("testtopic", busHandlerOne)
@@ -215,6 +267,23 @@ func BenchmarkEventBusPublish(b *testing.B) {
 	go func() {
 		for i := 0; i < b.N; i++ {
 			bus.Publish("testtopic", i)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+	bus.Close()
+}
+
+func BenchmarkEventBusPublishSync(b *testing.B) {
+	bus := New()
+	bus.Subscribe("testtopic", busHandlerOne)
+
+	b.ResetTimer()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		for i := 0; i < b.N; i++ {
+			bus.PublishSync("testtopic", i)
 		}
 		wg.Done()
 	}()
