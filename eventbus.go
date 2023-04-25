@@ -109,8 +109,12 @@ func (c *channel) unsubscribe(handler any) error {
 func (c *channel) close() {
 	c.Lock()
 	defer c.Unlock()
+	if c.closed {
+		return
+	}
 	c.closed = true
 	c.stopCh <- struct{}{}
+	c.handlers.Clear()
 	close(c.channel)
 }
 
@@ -150,8 +154,7 @@ func (e *EventBus) Unsubscribe(topic string, handler any) error {
 	if !ok {
 		return ErrNoSubscriber
 	}
-	ch.(*channel).unsubscribe(handler)
-	return nil
+	return ch.(*channel).unsubscribe(handler)
 }
 
 // Subscribe subscribes to a topic, return an error if the handler is not a function.
@@ -174,8 +177,7 @@ func (e *EventBus) Subscribe(topic string, handler any) error {
 		ch = newChannel(topic, e.bufferSize)
 		e.channels.Store(topic, ch)
 	}
-	ch.(*channel).subscribe(handler)
-	return nil
+	return ch.(*channel).subscribe(handler)
 }
 
 // Publish triggers the handlers defined for a topic. The `payload` argument will be passed to the handler.
@@ -189,8 +191,7 @@ func (e *EventBus) Publish(topic string, payload any) error {
 		go ch.(*channel).loop()
 	}
 
-	ch.(*channel).publish(payload)
-	return nil
+	return ch.(*channel).publish(payload)
 }
 
 // Close closes the eventbus

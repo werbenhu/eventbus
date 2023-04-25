@@ -73,6 +73,16 @@ func Test_CowMapDelete(t *testing.T) {
 	}
 }
 
+func Test_CowMapClear(t *testing.T) {
+	m := NewCowMap()
+	for i := 0; i < 100; i++ {
+		m.Store(i, strconv.Itoa(i))
+	}
+
+	m.Clear()
+	assert.Equal(t, 0, m.Len())
+}
+
 func Test_CowMapLen(t *testing.T) {
 	m := NewCowMap()
 	for i := 0; i < 100; i++ {

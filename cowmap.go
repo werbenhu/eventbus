@@ -63,14 +63,24 @@ func (c *CowMap) Delete(key any) {
 
 	copy := c.clone()
 	delete(copy, key)
-
 	c.readable.Store(copy)
+}
+
+// Clear Removes all key-value pairs from the map
+func (c *CowMap) Clear() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	m := make(tmap)
+	c.readable.Store(m)
 }
 
 // Range calls the provided function for each key-value pair in the map,
 // stopping the iteration if the function returns false
 func (c *CowMap) Range(f func(key, value any) bool) {
-	for k, v := range c.readable.Load().(tmap) {
+	m := c.readable.Load().(tmap)
+
+	for k, v := range m {
 		if !f(k, v) {
 			break
 		}

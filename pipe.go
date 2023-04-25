@@ -101,6 +101,10 @@ func (p *Pipe[T]) Publish(payload T) error {
 func (p *Pipe[T]) Close() {
 	p.Lock()
 	defer p.Unlock()
+
+	if p.closed {
+		return
+	}
 	p.closed = true
 	p.stopCh <- struct{}{}
 	close(p.channel)

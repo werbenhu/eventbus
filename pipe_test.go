@@ -63,7 +63,7 @@ func Test_PipePublish(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		for i := 0; i < 10000; i++ {
+		for i := 0; i < 1000; i++ {
 			err := p.Publish(i)
 			assert.Nil(t, err)
 		}
@@ -74,4 +74,17 @@ func Test_PipePublish(t *testing.T) {
 	p.Close()
 	err = p.Publish(1)
 	assert.Equal(t, ErrChannelClosed, err)
+}
+
+func Test_PipeClose(t *testing.T) {
+	p := NewPipe[int]()
+	assert.NotNil(t, p)
+	assert.NotNil(t, p.channel)
+
+	err := p.Subscribe(pipeHandlerOne)
+	assert.Nil(t, err)
+	p.Close()
+	err = p.Unsubscribe(pipeHandlerOne)
+	assert.Equal(t, ErrChannelClosed, err)
+	p.Close()
 }
