@@ -84,16 +84,6 @@ func main() {
 To make it more convenient to use EventBus, here is a global singleton object of EventBus. The channel inside this object is unbuffered. By directly using `eventbus.Subscribe()`, `eventbus.Publish()`, `eventbus.PublishSync()`, and `eventbus.Unsubscribe()`, the corresponding methods of this singleton object will be called.
 
 ```go
-package main
-
-import (
-	"fmt"
-	"sync"
-	"time"
-
-	"github.com/werbenhu/eventbus"
-)
-
 func handler(topic string, payload int) {
 	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
 }
@@ -138,46 +128,35 @@ Pipe also supports synchronous and asynchronous message publishing. If you need 
 
 #### pipe example
 ```go
-package main
+func handler1(val string) {
+	fmt.Printf("handler1 val:%s\n", val)
+}
 
-import (
-	"fmt"
-	"sync"
-	"time"
-
-	"github.com/werbenhu/eventbus"
-)
-
-func handler(topic string, payload int) {
-	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
+func handler2(val string) {
+	fmt.Printf("handler2 val:%s\n", val)
 }
 
 func main() {
-	// eventbus.Subscribe() will call the global singleton's Subscribe() method
-	eventbus.Subscribe("testtopic", handler)
+	pipe := eventbus.NewPipe[string]()
+	pipe.Subscribe(handler1)
+	pipe.Subscribe(handler2)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		// Asynchronously publish messages
 		for i := 0; i < 100; i++ {
-			// eventbus.Publish() will call the global singleton's Publish() method
-			eventbus.Publish("testtopic", i)
+			pipe.Publish(strconv.Itoa(i))
 		}
-		// Synchronously publish messages
 		for i := 100; i < 200; i++ {
-			// eventbus.Publish() will call the global singleton's Publish() method
-			eventbus.PublishSync("testtopic", i)
+			pipe.PublishSync(strconv.Itoa(i))
 		}
 		wg.Done()
 	}()
 	wg.Wait()
 
 	time.Sleep(time.Millisecond)
-	// eventbus.Unsubscribe() will call the global singleton's Unsubscribe() method
-	eventbus.Unsubscribe("testtopic", handler)
-
-	// eventbus.Close() will call the global singleton's Close() method
-	eventbus.Close()
+	pipe.Unsubscribe(handler1)
+	pipe.Unsubscribe(handler2)
+	pipe.Close()
 }
 ```

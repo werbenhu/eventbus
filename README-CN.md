@@ -65,7 +65,7 @@ func main() {
 	// 异步方式发布消息
 	bus.Publish("testtopic", 100)
 
-	//同步方式发布消息
+	// 同步方式发布消息
 	bus.PublishSync("testtopic", 200)
 
 	// 订阅者接收消息。为了确保订阅者可以接收完所有消息的异步消息，这里在取消订阅之前给了一点延迟。
@@ -80,16 +80,6 @@ func main() {
 为了更方便的使用EventBus, 这里有一个全局的EventBus单例对象，这个对象内部的channel是无缓冲的，直接使用`eventbus.Subscribe()`,`eventbus.Publish()`,`eventbus.Unsubscribe()`，将会调用该单例对象对应的方法。
 
 ```go
-package main
-
-import (
-	"fmt"
-	"sync"
-	"time"
-
-	"github.com/werbenhu/eventbus"
-)
-
 func handler(topic string, payload int) {
 	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
 }
@@ -101,12 +91,12 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		//异步方式发布消息
+		// 异步方式发布消息
 		for i := 0; i < 100; i++ {
 			// eventbus.Subscribe() 将调用全局单例singleton.Publish()方法
 			eventbus.Publish("testtopic", i)
 		}
-		//同步方式发布消息
+		// 同步方式发布消息
 		for i := 100; i < 200; i++ {
 			// eventbus.Subscribe() 将调用全局单例singleton.Publish()方法
 			eventbus.Publish("testtopic", i)
@@ -134,17 +124,6 @@ Pipe同样支持同步和异步的方式发布消息。如果需要使用同步�
 
 #### Pipe 示例
 ```go
-package main
-
-import (
-	"fmt"
-	"strconv"
-	"sync"
-	"time"
-
-	"github.com/werbenhu/eventbus"
-)
-
 func handler1(val string) {
 	fmt.Printf("handler1 val:%s\n", val)
 }
@@ -161,11 +140,9 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		//异步方式发布消息
 		for i := 0; i < 100; i++ {
 			pipe.Publish(strconv.Itoa(i))
 		}
-		//同步方式发布消息
 		for i := 100; i < 200; i++ {
 			pipe.PublishSync(strconv.Itoa(i))
 		}
@@ -178,5 +155,4 @@ func main() {
 	pipe.Unsubscribe(handler2)
 	pipe.Close()
 }
-
 ```
