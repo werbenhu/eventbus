@@ -29,9 +29,7 @@ import (
 EventBus同时支持同步和异步的方式发布消息。EventBus使用一个Copy-On-Write的map管理handler和topic，所以不建议在有大量频繁的订阅和取消订阅的业务场景中使用。
 
 #### 异步的方式
-在EventBus里，每个主题对应一个通道。`Publish()` 方法将消息推送到通道，`Subscribe(`) 方法中的handler将处理从通道出来的消息。
-
-如果要使用带缓冲的EventBus，可以使用 `eventbus.NewBuffered(bufferSize int)` 方法创建带缓冲的EventBus，这样会为每个topic都创建一个带缓冲的channel。
+在EventBus里，每个主题对应一个通道。`Publish()` 方法将消息推送到通道，`Subscribe(`) 方法中的handler将处理从通道出来的消息。如果要使用带缓冲的EventBus，可以使用 `eventbus.NewBuffered(bufferSize int)` 方法创建带缓冲的EventBus，这样会为每个topic都创建一个带缓冲的channel。
 
 #### 同步的方式
 同步的方式下EventBus不使用channel，而是通过直接调用handler将消息传递给订阅者。如果想同步的方式发布消息，使用eventbus.PublishSync()函数即可。
@@ -119,11 +117,7 @@ func main() {
 ## 使用Pipe代替Channel
 
 Pipe 将通道封装成泛型对象，泛型参数对应channle里的类型，这里没有主题的概念。
-`eventbus.NewPipe[T]()` 等价于 `make(chan T)`,发布者发布消息，订阅者接收消息，可以使用 `Pipe.Publish()` 方法代替 `chan <-`，使用 `Pipe.Subscribe()` 方法代替 `<-chan`。如果有多个订阅者，则每个订阅者将接收到发布出来的每一条消息。
-
-如果要使用带缓冲的通道，可以使用 `eventbus.NewBufferedPipe[T](bufferSize int)` 方法创建带缓冲的管道。
-
-Pipe同样支持同步和异步的方式发布消息。如果需要使用同步的方式，请调用Pipe.PublishSync()。
+`eventbus.NewPipe[T]()` 等价于 `make(chan T)`,发布者发布消息，订阅者接收消息，可以使用 `Pipe.Publish()` 方法代替 `chan <-`，使用 `Pipe.Subscribe()` 方法代替 `<-chan`。如果有多个订阅者，则每个订阅者将接收到发布出来的每一条消息。如果要使用带缓冲的通道，可以使用 `eventbus.NewBufferedPipe[T](bufferSize int)` 方法创建带缓冲的管道。Pipe同样支持同步和异步的方式发布消息。如果需要使用同步的方式，请调用Pipe.PublishSync()。
 
 #### Pipe 示例
 ```go
