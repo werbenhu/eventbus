@@ -117,7 +117,9 @@ func main() {
 ## 使用Pipe代替Channel
 
 Pipe 将通道封装成泛型对象，泛型参数对应channle里的类型，这里没有主题的概念。
-`eventbus.NewPipe[T]()` 等价于 `make(chan T)`,发布者发布消息，订阅者接收消息，可以使用 `Pipe.Publish()` 方法代替 `chan <-`，使用 `Pipe.Subscribe()` 方法代替 `<-chan`。如果有多个订阅者，则每个订阅者将接收到发布出来的每一条消息。如果要使用带缓冲的通道，可以使用 `eventbus.NewBufferedPipe[T](bufferSize int)` 方法创建带缓冲的管道。Pipe同样支持同步和异步的方式发布消息。如果需要使用同步的方式，请调用Pipe.PublishSync()。
+`eventbus.NewPipe[T]()` 等价于 `make(chan T)`,发布者发布消息，订阅者接收消息，可以使用 `Pipe.Publish()` 方法代替 `chan <-`，使用 `Pipe.Subscribe()` 方法代替 `<-chan`。如果有多个订阅者，则每个订阅者将接收到发布出来的每一条消息。
+
+如果要使用带缓冲的通道，可以使用 `eventbus.NewBufferedPipe[T](bufferSize int)` 方法创建带缓冲的管道。Pipe同样支持同步和异步的方式发布消息。如果需要使用同步的方式，请调用Pipe.PublishSync()。
 
 #### Pipe 示例
 ```go
