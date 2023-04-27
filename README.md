@@ -123,13 +123,7 @@ func main() {
 
 ## Use Pipe instead of channel
 
-Pipe is a wrapper for a channel without the concept of topics, with the generic parameter corresponding to the type of the channel. 
-
-`eventbus.NewPipe[T]()` is equivalent to `make(chan T)`. Publishers publish messages, and subscribers receive messages. You can use the `Pipe.Publish()` method instead of `chan <-`, and the `Pipe.Subscribe()` method instead of `<-chan`. If there are multiple subscribers, each subscriber will receive every message that is published.
-
-If you want to use a buffered channel, you can use the `eventbus.NewBufferedPipe[T](bufferSize int)` method to create a buffered pipe.
-
-Pipe also supports synchronous and asynchronous message publishing. If you need to use the synchronous method, call `Pipe.PublishSync()`.
+Pipe is a wrapper for a channel without the concept of topics, with the generic parameter corresponding to the type of the channel. `eventbus.NewPipe[T]()` is equivalent to `make(chan T)`. Publishers publish messages, and subscribers receive messages. You can use the `Pipe.Publish()` method instead of `chan <-`, and the `Pipe.Subscribe()` method instead of `<-chan`. If there are multiple subscribers, each subscriber will receive every message that is published.If you want to use a buffered channel, you can use the `eventbus.NewBufferedPipe[T](bufferSize int)` method to create a buffered pipe.Pipe also supports synchronous and asynchronous message publishing. If you need to use the synchronous method, call `Pipe.PublishSync()`.
 
 #### pipe example
 ```go
