@@ -81,7 +81,7 @@ func main() {
 ```
 
 ### Using the global singleton object of EventBus
-To make it more convenient to use EventBus, there is a global singleton object for EventBus. You can initialize this singleton object by calling `eventbus.InitSingleton()`. The internal channel of this object is unbuffered, and you can directly use eventbus.Subscribe(), eventbus.Publish(), and eventbus.Unsubscribe() to call the corresponding methods of the singleton object.
+To make it more convenient to use EventBus, there is a global singleton object for EventBus. You can initialize this singleton object by calling `eventbus.InitSingleton()`. The internal channel of this object is unbuffered, and you can directly use `eventbus.Subscribe()`, `eventbus.Publish()`, and `eventbus.Unsubscribe()` to call the corresponding methods of the singleton object.
 
 ```go
 func handler(topic string, payload int) {
