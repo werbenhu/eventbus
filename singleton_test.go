@@ -7,13 +7,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func initSingleton() {
+func recreateSingleton() {
 	singleton = nil
-	singleton = New()
+	InitSingleton()
+}
+
+func Test_InitSingleton(t *testing.T) {
+	recreateSingleton()
+	assert.NotNil(t, singleton)
 }
 
 func Test_SingletonSubscribe(t *testing.T) {
-	initSingleton()
+	recreateSingleton()
 	err := Subscribe("testtopic", busHandlerOne)
 	assert.Nil(t, err)
 	assert.NotNil(t, singleton)
@@ -38,7 +43,7 @@ func Test_SingletonSubscribe(t *testing.T) {
 }
 
 func Test_SingletonUnsubscribe(t *testing.T) {
-	initSingleton()
+	recreateSingleton()
 
 	err := Unsubscribe("testtopic", busHandlerOne)
 	assert.Equal(t, ErrNoSubscriber, err)
@@ -56,7 +61,7 @@ func Test_SingletonUnsubscribe(t *testing.T) {
 }
 
 func Test_SingletonPublish(t *testing.T) {
-	initSingleton()
+	recreateSingleton()
 
 	err := Publish("testtopic", 1)
 	assert.Nil(t, err)
@@ -82,7 +87,7 @@ func Test_SingletonPublish(t *testing.T) {
 }
 
 func Test_SingletonPublishSync(t *testing.T) {
-	initSingleton()
+	recreateSingleton()
 
 	err := Publish("testtopic", 1)
 	assert.Nil(t, err)

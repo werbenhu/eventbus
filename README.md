@@ -81,7 +81,7 @@ func main() {
 ```
 
 ### Using the global singleton object of EventBus
-To make it more convenient to use EventBus, here is a global singleton object of EventBus. The channel inside this object is unbuffered. By directly using `eventbus.Subscribe()`, `eventbus.Publish()`, `eventbus.PublishSync()`, and `eventbus.Unsubscribe()`, the corresponding methods of this singleton object will be called.
+To make it more convenient to use EventBus, there is a global singleton object for EventBus. You can initialize this singleton object by calling `eventbus.InitSingleton()`. The internal channel of this object is unbuffered, and you can directly use eventbus.Subscribe(), eventbus.Publish(), and eventbus.Unsubscribe() to call the corresponding methods of the singleton object.
 
 ```go
 func handler(topic string, payload int) {
@@ -89,6 +89,10 @@ func handler(topic string, payload int) {
 }
 
 func main() {
+
+	// Initialize the singleton object
+	eventbus.InitSingleton()
+
 	// eventbus.Subscribe() will call the global singleton's Subscribe() method
 	eventbus.Subscribe("testtopic", handler)
 
@@ -119,11 +123,13 @@ func main() {
 
 ## Use Pipe instead of channel
 
-Pipe is a wrapper for a channel without the concept of topics. Publishers publish messages and subscribers receive messages. You can use the `Pipe.Publish()` method instead of `chan <-`, and use the `Pipe.Subscribe()` method instead of `<-chan`. If there are multiple subscribers, each subscriber will receive every message that is published.
+Pipe is a wrapper for a channel without the concept of topics, with the generic parameter corresponding to the type of the channel. 
+
+`eventbus.NewPipe[T]()` is equivalent to `make(chan T)`. Publishers publish messages, and subscribers receive messages. You can use the `Pipe.Publish()` method instead of `chan <-`, and the `Pipe.Subscribe()` method instead of `<-chan`. If there are multiple subscribers, each subscriber will receive every message that is published.
 
 If you want to use a buffered channel, you can use the `eventbus.NewBufferedPipe[T](bufferSize int)` method to create a buffered pipe.
 
-Pipe also supports synchronous and asynchronous message publishing. If you need to use a synchronous way, you can call `Pipe.PublishSync()`.
+Pipe also supports synchronous and asynchronous message publishing. If you need to use the synchronous method, call `Pipe.PublishSync()`.
 
 #### pipe example
 ```go

@@ -75,7 +75,7 @@ func main() {
 
 ### 使用全局的EventBus单例对象
 
-为了更方便的使用EventBus, 这里有一个全局的EventBus单例对象，这个对象内部的channel是无缓冲的，直接使用`eventbus.Subscribe()`,`eventbus.Publish()`,`eventbus.Unsubscribe()`，将会调用该单例对象对应的方法。
+为了更方便的使用EventBus, 这里有一个全局的EventBus单例对象，使用`eventbus.InitSingleton() `初始化这个单例对象，这个对象内部的channel是无缓冲的，直接使用`eventbus.Subscribe()`,`eventbus.Publish()`,`eventbus.Unsubscribe()`，将会调用该单例对象对应的方法。
 
 ```go
 func handler(topic string, payload int) {
@@ -83,6 +83,10 @@ func handler(topic string, payload int) {
 }
 
 func main() {
+
+	// 初始化单例对象
+	eventbus.InitSingleton()
+
 	// eventbus.Subscribe() 将调用全局单例singleton.Subscribe()方法
 	eventbus.Subscribe("testtopic", handler)
 
@@ -114,7 +118,8 @@ func main() {
 
 ## 使用Pipe代替Channel
 
-Pipe 是通道的一个封装，这里没有主题的概念。发布者发布消息，订阅者接收消息，可以使用 `Pipe.Publish()` 方法代替 `chan <-`，使用 `Pipe.Subscribe()` 方法代替 `<-chan`。如果有多个订阅者，则每个订阅者将接收到发布出来的每一条消息。
+Pipe 将通道封装成泛型对象，泛型参数对应channle里的类型，这里没有主题的概念。
+`eventbus.NewPipe[T]()` 等价于 `make(chan T)`,发布者发布消息，订阅者接收消息，可以使用 `Pipe.Publish()` 方法代替 `chan <-`，使用 `Pipe.Subscribe()` 方法代替 `<-chan`。如果有多个订阅者，则每个订阅者将接收到发布出来的每一条消息。
 
 如果要使用带缓冲的通道，可以使用 `eventbus.NewBufferedPipe[T](bufferSize int)` 方法创建带缓冲的管道。
 

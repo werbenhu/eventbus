@@ -5,7 +5,8 @@ var (
 	singleton *EventBus
 )
 
-func init() {
+// InitSingleton initializes the singleton instance of EventBus, which will be created only when necessary.
+func InitSingleton() {
 	if singleton == nil {
 
 		// If singleton is nil, we create a new instance of EventBus using the New()
