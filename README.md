@@ -31,9 +31,7 @@ EventBus supports both synchronous and asynchronous message publication. it uses
 
 #### Asynchronous Way
 
-In EventBus, each topic corresponds to a channel. The `Publish()` method pushes the message to the channel, and the handler in the `Subscribe()` method handles the message that comes out of the channel.
-
-If you want to use a buffered EventBus, you can create a buffered EventBus with the `eventbus.NewBuffered(bufferSize int)` method, which will create a buffered channel for each topic.
+In EventBus, each topic corresponds to a channel. The `Publish()` method pushes the message to the channel, and the handler in the `Subscribe()` method handles the message that comes out of the channel.If you want to use a buffered EventBus, you can create a buffered EventBus with the `eventbus.NewBuffered(bufferSize int)` method, which will create a buffered channel for each topic.
 
 #### Synchronous Way
 
