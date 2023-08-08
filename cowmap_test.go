@@ -246,23 +246,3 @@ func Test_CowMapStoreAndLoadConcurrent(t *testing.T) {
 		loadWg.Wait()
 	})
 }
-
-func Benchmark_CowMapStore(b *testing.B) {
-	m := NewCowMap()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		m.Store(i, strconv.Itoa(i))
-	}
-}
-
-func Benchmark_CowMapLoad(b *testing.B) {
-	m := NewCowMap()
-	for i := 0; i < 100; i++ {
-		m.Store(i, strconv.Itoa(i))
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		m.Load(i % 100)
-	}
-}
