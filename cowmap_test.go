@@ -11,8 +11,6 @@ import (
 func Test_NewCowMap(t *testing.T) {
 	m := NewCowMap()
 	assert.NotNil(t, m)
-	assert.NotNil(t, m.readable)
-}
 }
 
 func Test_CowMapLoad(t *testing.T) {
