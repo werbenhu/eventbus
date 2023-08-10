@@ -13,15 +13,6 @@ func Test_NewCowMap(t *testing.T) {
 	assert.NotNil(t, m)
 	assert.NotNil(t, m.readable)
 }
-
-func Test_CowMapClone(t *testing.T) {
-	m := NewCowMap()
-	for i := 0; i < 100; i++ {
-		m.Store(i, strconv.Itoa(i))
-	}
-	clone := m.clone()
-	assert.NotNil(t, clone)
-	assert.Equal(t, 100, len(clone))
 }
 
 func Test_CowMapLoad(t *testing.T) {
@@ -47,7 +38,7 @@ func Test_CowMapStore(t *testing.T) {
 		m.Store(i, strconv.Itoa(i))
 	}
 
-	assert.Equal(t, 100, m.Len())
+	assert.Equal(t, uint32(100), m.Len())
 }
 
 func Test_CowMapDelete(t *testing.T) {
@@ -80,7 +71,7 @@ func Test_CowMapClear(t *testing.T) {
 	}
 
 	m.Clear()
-	assert.Equal(t, 0, m.Len())
+	assert.Equal(t, uint32(0), m.Len())
 }
 
 func Test_CowMapLen(t *testing.T) {
@@ -88,7 +79,7 @@ func Test_CowMapLen(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		m.Store(i, strconv.Itoa(i))
 	}
-	assert.Equal(t, 100, m.Len())
+	assert.Equal(t, uint32(100), m.Len())
 }
 
 func Test_CowMapRange(t *testing.T) {

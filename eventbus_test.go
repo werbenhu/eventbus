@@ -81,7 +81,7 @@ func Test_channelClose(t *testing.T) {
 	err := ch.subscribe(busHandlerOne)
 	assert.Nil(t, err)
 	ch.close()
-	assert.Equal(t, 0, ch.handlers.Len())
+	assert.Equal(t, uint32(0), ch.handlers.Len())
 	ch.close()
 }
 
