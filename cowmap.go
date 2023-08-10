@@ -6,6 +6,13 @@ import (
 )
 
 // CowMap is a wrapper of Copy-On-Write map
+//
+// If a fully meaningful CowMap is implemented, both sync.Map and
+// CowMap utilize atomic.Value atomic operations to access the map
+// during data reading, resulting in similar read performance.
+// In reality, sync.Map is already a read-write separated structure,
+// yet it has better write performance. Therefore, CowMap directly
+// utilizes sync.Map as its internal structure.
 type CowMap struct {
 	sync.Map
 }
