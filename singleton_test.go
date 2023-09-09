@@ -7,18 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func recreateSingleton() {
-	singleton = nil
-	InitSingleton()
-}
-
-func Test_InitSingleton(t *testing.T) {
-	recreateSingleton()
-	assert.NotNil(t, singleton)
-}
-
 func Test_SingletonSubscribe(t *testing.T) {
-	recreateSingleton()
+	ResetSingleton()
 	err := Subscribe("testtopic", busHandlerOne)
 	assert.Nil(t, err)
 	assert.NotNil(t, singleton)
@@ -37,14 +27,14 @@ func Test_SingletonSubscribe(t *testing.T) {
 	})
 
 	assert.Equal(t, ErrHandlerFirstParam, err)
-	Close()
+	singleton.Close()
 	err = Unsubscribe("testtopic", busHandlerTwo)
 	assert.Equal(t, ErrChannelClosed, err)
+	Close()
 }
 
 func Test_SingletonUnsubscribe(t *testing.T) {
-	recreateSingleton()
-
+	ResetSingleton()
 	err := Unsubscribe("testtopic", busHandlerOne)
 	assert.Equal(t, ErrNoSubscriber, err)
 	assert.NotNil(t, singleton)
@@ -54,15 +44,15 @@ func Test_SingletonUnsubscribe(t *testing.T) {
 
 	err = Unsubscribe("testtopic", busHandlerOne)
 	assert.Nil(t, err)
-	Close()
+	singleton.Close()
 
 	err = Unsubscribe("testtopic", busHandlerTwo)
 	assert.Equal(t, ErrChannelClosed, err)
+	Close()
 }
 
 func Test_SingletonPublish(t *testing.T) {
-	recreateSingleton()
-
+	ResetSingleton()
 	err := Publish("testtopic", 1)
 	assert.Nil(t, err)
 	assert.NotNil(t, singleton)
@@ -87,8 +77,7 @@ func Test_SingletonPublish(t *testing.T) {
 }
 
 func Test_SingletonPublishSync(t *testing.T) {
-	recreateSingleton()
-
+	ResetSingleton()
 	err := Publish("testtopic", 1)
 	assert.Nil(t, err)
 	assert.NotNil(t, singleton)
@@ -108,6 +97,40 @@ func Test_SingletonPublishSync(t *testing.T) {
 			wg.Done()
 		}()
 	}
+	wg.Wait()
+	Close()
+}
+
+func BenchmarkSingletonPublish(b *testing.B) {
+	ResetSingleton()
+	Subscribe("testtopic", busHandlerOne)
+
+	b.ResetTimer()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		for i := 0; i < b.N; i++ {
+			Publish("testtopic", i)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
+	Close()
+}
+
+func BenchmarkSingletonPublishSync(b *testing.B) {
+	ResetSingleton()
+	Subscribe("testtopic", busHandlerOne)
+
+	b.ResetTimer()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		for i := 0; i < b.N; i++ {
+			PublishSync("testtopic", i)
+		}
+		wg.Done()
+	}()
 	wg.Wait()
 	Close()
 }

@@ -5,14 +5,17 @@ var (
 	singleton *EventBus
 )
 
-// InitSingleton initializes the singleton instance of EventBus, which will be created only when necessary.
-func InitSingleton() {
-	if singleton == nil {
+func init() {
+	ResetSingleton()
+}
 
-		// If singleton is nil, we create a new instance of EventBus using the New()
-		// function and assign it to the singleton variable.
-		singleton = New()
+// ResetSingleton resets the singleton object. If the singleton object is not nil,
+// it first closes the old singleton, and then creates a new singleton instance.
+func ResetSingleton() {
+	if singleton != nil {
+		singleton.Close()
 	}
+	singleton = New()
 }
 
 // Unsubscribe removes handler defined for a topic.
@@ -42,5 +45,8 @@ func PublishSync(topic string, payload any) error {
 
 // Close closes the singleton instance of EventBus.
 func Close() {
-	singleton.Close()
+	if singleton != nil {
+		singleton.Close()
+		singleton = nil
+	}
 }

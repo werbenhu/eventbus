@@ -73,17 +73,23 @@ func main() {
 
 ### 使用全局的EventBus单例对象
 
-为了更方便的使用EventBus, 这里有一个全局的EventBus单例对象，使用`eventbus.InitSingleton() `初始化这个单例对象，这个对象内部的channel是无缓冲的，直接使用`eventbus.Subscribe()`,`eventbus.Publish()`,`eventbus.Unsubscribe()`，将会调用该单例对象对应的方法。
+为了更方便的使用EventBus, 这里有一个全局的EventBus单例对象，这个单例内部的channel是无缓冲的，直接使用`eventbus.Subscribe()`,`eventbus.Publish()`,`eventbus.Unsubscribe()`，将会调用该单例对象对应的方法。
 
 ```go
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/werbenhu/eventbus"
+)
+
 func handler(topic string, payload int) {
 	fmt.Printf("topic:%s, payload:%d\n", topic, payload)
 }
 
 func main() {
-
-	// 初始化单例对象
-	eventbus.InitSingleton()
 
 	// eventbus.Subscribe() 将调用全局单例singleton.Subscribe()方法
 	eventbus.Subscribe("testtopic", handler)
