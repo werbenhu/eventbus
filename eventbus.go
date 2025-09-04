@@ -209,7 +209,6 @@ func (e *EventBus) Publish(topic string, payload any) error {
 	if !ok {
 		ch = newChannel(topic, e.bufferSize)
 		e.channels.Store(topic, ch)
-		go ch.(*channel).loop()
 	}
 
 	return ch.(*channel).publish(payload)
@@ -224,7 +223,6 @@ func (e *EventBus) PublishSync(topic string, payload any) error {
 	if !ok {
 		ch = newChannel(topic, e.bufferSize)
 		e.channels.Store(topic, ch)
-		go ch.(*channel).loop()
 	}
 
 	return ch.(*channel).publishSync(payload)
