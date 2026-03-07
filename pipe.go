@@ -1,6 +1,7 @@
 package eventbus
 
 import (
+	"reflect"
 	"sync"
 )
 
@@ -16,7 +17,7 @@ type Pipe[T any] struct {
 	channel    chan T
 	handlers   *CowMap
 	closed     bool
-	stopCh     chan any
+	stopCh     chan struct{}
 }
 
 // NewPipe create a unbuffered pipe
@@ -24,7 +25,7 @@ func NewPipe[T any]() *Pipe[T] {
 	p := &Pipe[T]{
 		bufferSize: -1,
 		channel:    make(chan T),
-		stopCh:     make(chan any),
+		stopCh:     make(chan struct{}),
 		handlers:   NewCowMap(),
 	}
 
@@ -42,7 +43,7 @@ func NewBufferedPipe[T any](bufferSize int) *Pipe[T] {
 	p := &Pipe[T]{
 		bufferSize: bufferSize,
 		channel:    make(chan T, bufferSize),
-		stopCh:     make(chan any),
+		stopCh:     make(chan struct{}),
 		handlers:   NewCowMap(),
 	}
 
@@ -72,7 +73,8 @@ func (p *Pipe[T]) Subscribe(handler Handler[T]) error {
 	if p.closed {
 		return ErrChannelClosed
 	}
-	p.handlers.Store(&handler, handler)
+	key := reflect.ValueOf(handler).Pointer()
+	p.handlers.Store(key, handler)
 	return nil
 }
 
@@ -83,7 +85,8 @@ func (p *Pipe[T]) Unsubscribe(handler Handler[T]) error {
 	if p.closed {
 		return ErrChannelClosed
 	}
-	p.handlers.Delete(&handler)
+	key := reflect.ValueOf(handler).Pointer()
+	p.handlers.Delete(key)
 	return nil
 }
 
@@ -122,6 +125,6 @@ func (p *Pipe[T]) Close() {
 		return
 	}
 	p.closed = true
-	p.stopCh <- struct{}{}
+	close(p.stopCh)
 	close(p.channel)
 }

@@ -10,10 +10,11 @@ type channel struct {
 	sync.RWMutex
 	bufferSize int
 	topic      string
+	topicValue reflect.Value
 	channel    chan any
 	handlers   *CowMap
 	closed     bool
-	stopCh     chan any
+	stopCh     chan struct{}
 }
 
 // newChannel creates a new channel with a specified topic and buffer size.
@@ -28,10 +29,11 @@ func newChannel(topic string, bufferSize int) *channel {
 	}
 	c := &channel{
 		topic:      topic,
+		topicValue: reflect.ValueOf(topic),
 		bufferSize: bufferSize,
 		channel:    ch,
 		handlers:   NewCowMap(),
-		stopCh:     make(chan any),
+		stopCh:     make(chan struct{}),
 	}
 	go c.loop()
 	return c
@@ -39,9 +41,8 @@ func newChannel(topic string, bufferSize int) *channel {
 
 // transfer calls all the handlers in the channel with the given payload.
 // It iterates over the handlers in the handlers map to call them with the payload.
-func (c *channel) transfer(topic string, payload any) {
+func (c *channel) transfer(payload any) {
 	var payloadValue reflect.Value
-	topicValue := reflect.ValueOf(c.topic)
 
 	c.handlers.Range(func(key any, fn any) bool {
 		handler := fn.(*reflect.Value)
@@ -55,7 +56,7 @@ func (c *channel) transfer(topic string, payload any) {
 		} else {
 			payloadValue = reflect.ValueOf(payload)
 		}
-		(*handler).Call([]reflect.Value{topicValue, payloadValue})
+		(*handler).Call([]reflect.Value{c.topicValue, payloadValue})
 		return true
 	})
 }
@@ -67,7 +68,7 @@ func (c *channel) loop() {
 	for {
 		select {
 		case payload := <-c.channel:
-			c.transfer(c.topic, payload)
+			c.transfer(payload)
 		case <-c.stopCh:
 			return
 		}
@@ -95,7 +96,7 @@ func (c *channel) publishSync(payload any) error {
 	if c.closed {
 		return ErrChannelClosed
 	}
-	c.transfer(c.topic, payload)
+	c.transfer(payload)
 	return nil
 }
 
@@ -132,7 +133,7 @@ func (c *channel) close() {
 		return
 	}
 	c.closed = true
-	c.stopCh <- struct{}{}
+	close(c.stopCh)
 	c.handlers.Clear()
 	close(c.channel)
 }
@@ -193,8 +194,12 @@ func (e *EventBus) Subscribe(topic string, handler any) error {
 
 	ch, ok := e.channels.Load(topic)
 	if !ok {
-		ch = newChannel(topic, e.bufferSize)
-		e.channels.Store(topic, ch)
+		newCh := newChannel(topic, e.bufferSize)
+		ch, loaded := e.channels.LoadOrStore(topic, newCh)
+		if loaded {
+			newCh.close()
+		}
+		return ch.(*channel).subscribe(handler)
 	}
 	return ch.(*channel).subscribe(handler)
 }
@@ -205,10 +210,13 @@ func (e *EventBus) Subscribe(topic string, handler any) error {
 // The type of the payload must correspond to the second parameter of the handler in `Subscribe()`.
 func (e *EventBus) Publish(topic string, payload any) error {
 	ch, ok := e.channels.Load(topic)
-
 	if !ok {
-		ch = newChannel(topic, e.bufferSize)
-		e.channels.Store(topic, ch)
+		newCh := newChannel(topic, e.bufferSize)
+		var loaded bool
+		ch, loaded = e.channels.LoadOrStore(topic, newCh)
+		if loaded {
+			newCh.close()
+		}
 	}
 
 	return ch.(*channel).publish(payload)
@@ -219,10 +227,13 @@ func (e *EventBus) Publish(topic string, payload any) error {
 // It does not use channels and instead directly calls the handler function.
 func (e *EventBus) PublishSync(topic string, payload any) error {
 	ch, ok := e.channels.Load(topic)
-
 	if !ok {
-		ch = newChannel(topic, e.bufferSize)
-		e.channels.Store(topic, ch)
+		newCh := newChannel(topic, e.bufferSize)
+		var loaded bool
+		ch, loaded = e.channels.LoadOrStore(topic, newCh)
+		if loaded {
+			newCh.close()
+		}
 	}
 
 	return ch.(*channel).publishSync(payload)

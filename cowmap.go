@@ -2,7 +2,6 @@ package eventbus
 
 import (
 	"sync"
-	"sync/atomic"
 )
 
 // CowMap is a wrapper of Copy-On-Write map
@@ -26,7 +25,7 @@ func NewCowMap() *CowMap {
 func (c *CowMap) Len() uint32 {
 	var size uint32
 	c.Range(func(k, v any) bool {
-		atomic.AddUint32(&size, 1)
+		size++
 		return true
 	})
 	return size
